@@ -1,0 +1,185 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Home</title>
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+      :root {
+        --bg-start: #e3f2fd;
+        --bg-end: #f3e5f5;
+        --text: rgba(0,0,0,0.87);
+        --panel-bg: #ffffff;
+        --panel-border: rgba(0,0,0,.06);
+        --btn-start: #1e88e5;
+        --btn-end: #3949ab;
+        --accent: #1a237e;
+        --subtle: rgba(0,0,0,.65);
+      --btn-secondary-start: #f093fb;
+      --btn-secondary-end: #f5576c;
+      }
+      body.dark {
+      --bg-start: #000000;
+      --bg-end: #0a0a0a;
+      --text: rgba(255,255,255,0.98);
+      --panel-bg: #050505;
+      --panel-border: rgba(255,255,255,.2);
+      --btn-start: #818cf8;
+      --btn-end: #4f46e5;
+      --accent: #c7d2fe;
+      --subtle: rgba(255,255,255,.85);
+      --btn-secondary-start: #a78bfa;
+      --btn-secondary-end: #7c3aed;
+    }
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+      background: linear-gradient(135deg, var(--bg-start), var(--bg-end));
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: var(--text);
+      margin: 0;
+      padding: 0;
+    }
+    .header {
+      position: fixed;
+      top: 0;
+      right: 0;
+      padding: 1rem;
+      z-index: 10;
+    }
+    .toggle {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    .toggle span {
+      font-size: 14px;
+      color: var(--subtle);
+    }
+    .switch {
+      position: relative;
+      width: 46px;
+      height: 26px;
+    }
+    .switch input {
+      opacity: 0;
+      width: 0;
+      height: 0;
+    }
+    .slider {
+      position: absolute;
+      cursor: pointer;
+      inset: 0;
+      background: #cfd8dc;
+      transition: .2s;
+      border-radius: 999px;
+    }
+    .slider:before {
+      content: "";
+      position: absolute;
+      height: 20px;
+      width: 20px;
+      left: 3px;
+      top: 3px;
+      background: #fff;
+      transition: .2s;
+      border-radius: 50%;
+      box-shadow: 0 1px 3px rgba(0,0,0,.3);
+    }
+    input:checked + .slider {
+      background: #37474f;
+    }
+    input:checked + .slider:before {
+      transform: translateX(20px);
+    }
+    .container {
+      text-align: center;
+      padding: 2rem;
+    }
+    h1 {
+      color: var(--accent);
+      font-size: 3rem;
+      margin-bottom: 2rem;
+      text-shadow: 2px 2px 4px rgba(0,0,0,0.2);
+    }
+    body.dark h1 {
+      text-shadow: 2px 2px 4px rgba(0,0,0,0.5);
+    }
+    .button-container {
+      display: flex;
+      gap: 1rem;
+      justify-content: center;
+      flex-wrap: wrap;
+    }
+    .button {
+      display: inline-block;
+      padding: 1rem 2.5rem;
+      font-size: 1.25rem;
+      font-weight: 600;
+      color: white;
+      background: linear-gradient(135deg, var(--btn-start), var(--btn-end));
+      border: none;
+      border-radius: 50px;
+      cursor: pointer;
+      text-decoration: none;
+      box-shadow: 0 4px 15px rgba(0,0,0,0.2);
+      transition: transform 0.2s, box-shadow 0.2s;
+    }
+    .button:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 6px 20px rgba(0,0,0,0.3);
+    }
+    .button:active {
+      transform: translateY(0);
+    }
+    .button-secondary {
+      background: linear-gradient(135deg, var(--btn-secondary-start), var(--btn-secondary-end));
+    }
+  </style>
+</head>
+<body>
+  <div class="header">
+    <div class="toggle">
+      <span>Dark Mode</span>
+      <label class="switch">
+        <input id="theme-toggle" type="checkbox" aria-label="Toggle dark mode">
+        <span class="slider"></span>
+      </label>
+    </div>
+  </div>
+  <div class="container">
+    <h1>Zidaan's Website</h1>
+    <div class="button-container">
+      <a href="about.html" class="button button-secondary">About</a>
+      <a href="gambling-simulator.html" class="button">Gambling Simulator</a>
+      <a href="em-teaching-tools.html" class="button">E&M Teaching Tools</a>
+    </div>
+  </div>
+  <script>
+    document.addEventListener('DOMContentLoaded', function() {
+      const themeToggle = document.getElementById('theme-toggle');
+      const savedTheme = localStorage.getItem('theme') || 'light';
+      if (savedTheme === 'dark') {
+        document.body.classList.add('dark');
+        themeToggle.checked = true;
+      }
+      themeToggle.addEventListener('change', () => {
+        if (themeToggle.checked) {
+          document.body.classList.add('dark');
+          localStorage.setItem('theme', 'dark');
+        } else {
+          document.body.classList.remove('dark');
+          localStorage.setItem('theme', 'light');
+        }
+      });
+    });
+  </script>
+</body>
+</html>

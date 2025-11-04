@@ -1,0 +1,176 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>About Me - Zidaan</title>
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+    :root {
+      --bg-start: #e3f2fd;
+      --bg-end: #f3e5f5;
+      --text: rgba(0,0,0,0.87);
+      --panel-bg: #ffffff;
+      --panel-border: rgba(0,0,0,.06);
+      --btn-start: #1e88e5;
+      --btn-end: #3949ab;
+      --accent: #1a237e;
+      --subtle: rgba(0,0,0,.65);
+    }
+    body.dark {
+      --bg-start: #000000;
+      --bg-end: #0a0a0a;
+      --text: rgba(255,255,255,0.98);
+      --panel-bg: #050505;
+      --panel-border: rgba(255,255,255,.2);
+      --btn-start: #818cf8;
+      --btn-end: #4f46e5;
+      --accent: #c7d2fe;
+      --subtle: rgba(255,255,255,.85);
+    }
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+      background: linear-gradient(135deg, var(--bg-start), var(--bg-end));
+      min-height: 100vh;
+      padding: 2rem;
+      color: var(--text);
+    }
+    .header {
+      position: fixed;
+      top: 0;
+      right: 0;
+      padding: 1rem;
+      z-index: 10;
+    }
+    .toggle {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    .toggle span {
+      font-size: 14px;
+      color: var(--subtle);
+    }
+    .switch {
+      position: relative;
+      width: 46px;
+      height: 26px;
+    }
+    .switch input {
+      opacity: 0;
+      width: 0;
+      height: 0;
+    }
+    .slider {
+      position: absolute;
+      cursor: pointer;
+      inset: 0;
+      background: #cfd8dc;
+      transition: .2s;
+      border-radius: 999px;
+    }
+    .slider:before {
+      content: "";
+      position: absolute;
+      height: 20px;
+      width: 20px;
+      left: 3px;
+      top: 3px;
+      background: #fff;
+      transition: .2s;
+      border-radius: 50%;
+      box-shadow: 0 1px 3px rgba(0,0,0,.3);
+    }
+    input:checked + .slider {
+      background: #37474f;
+    }
+    input:checked + .slider:before {
+      transform: translateX(20px);
+    }
+    .container {
+      max-width: 800px;
+      margin: 0 auto;
+      background: var(--panel-bg);
+      border: 1px solid var(--panel-border);
+      border-radius: 20px;
+      padding: 3rem;
+      box-shadow: 0 10px 40px rgba(0,0,0,0.2);
+    }
+    h1 {
+      color: var(--accent);
+      font-size: 2.5rem;
+      margin-bottom: 1rem;
+    }
+    .content {
+      line-height: 1.8;
+      font-size: 1.1rem;
+      color: var(--subtle);
+      margin-bottom: 2rem;
+    }
+    .back-button {
+      display: inline-block;
+      padding: 0.75rem 2rem;
+      font-size: 1rem;
+      font-weight: 600;
+      color: white;
+      background: linear-gradient(135deg, var(--btn-start), var(--btn-end));
+      border: none;
+      border-radius: 50px;
+      cursor: pointer;
+      text-decoration: none;
+      box-shadow: 0 4px 15px rgba(0,0,0,0.2);
+      transition: transform 0.2s, box-shadow 0.2s;
+    }
+    .back-button:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 6px 20px rgba(0,0,0,0.3);
+    }
+    .back-button:active {
+      transform: translateY(0);
+    }
+  </style>
+</head>
+<body>
+  <div class="header">
+    <div class="toggle">
+      <span>Dark Mode</span>
+      <label class="switch">
+        <input id="theme-toggle" type="checkbox" aria-label="Toggle dark mode">
+        <span class="slider"></span>
+      </label>
+    </div>
+  </div>
+  <div class="container">
+    <h1>About Me</h1>
+    <div class="content">
+      <p>Welcome to my website! I'm Zidaan, and this is my personal website where you can explore various projects and learn more about me.</p>
+      <p>Feel free to browse around and check out the different sections of the site.</p>
+    </div>
+    <a href="index.html" class="back-button">Back to Home</a>
+  </div>
+  <script>
+    document.addEventListener('DOMContentLoaded', function() {
+      const themeToggle = document.getElementById('theme-toggle');
+      const savedTheme = localStorage.getItem('theme') || 'light';
+      if (savedTheme === 'dark') {
+        document.body.classList.add('dark');
+        themeToggle.checked = true;
+      }
+      themeToggle.addEventListener('change', () => {
+        if (themeToggle.checked) {
+          document.body.classList.add('dark');
+          localStorage.setItem('theme', 'dark');
+        } else {
+          document.body.classList.remove('dark');
+          localStorage.setItem('theme', 'light');
+        }
+      });
+    });
+  </script>
+</body>
+</html>
+
