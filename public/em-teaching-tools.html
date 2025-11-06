@@ -132,6 +132,35 @@
     .back-button:active {
       transform: translateY(0);
     }
+    .tools-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+      gap: 1rem;
+      margin: 2rem 0;
+    }
+    .tool-card {
+      background: var(--panel-bg);
+      border: 1px solid var(--panel-border);
+      border-radius: 12px;
+      padding: 1.5rem;
+      cursor: pointer;
+      transition: transform 0.2s, box-shadow 0.2s;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+    }
+    .tool-card:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 6px 20px rgba(0,0,0,0.15);
+    }
+    .tool-card h3 {
+      color: var(--accent);
+      margin-bottom: 0.5rem;
+      font-size: 1.3rem;
+    }
+    .tool-card p {
+      color: var(--subtle);
+      font-size: 0.9rem;
+      line-height: 1.5;
+    }
   </style>
 </head>
 <body>
@@ -146,10 +175,127 @@
   </div>
   <div class="container">
     <h1>E&M Teaching Tools</h1>
-    <div class="content">
-      <p>Welcome to the Electricity & Magnetism Teaching Tools page. This section will contain interactive tools and resources for learning and teaching E&M concepts.</p>
-      <p>More content coming soon!</p>
+    <div class="tools-grid" id="tools-grid">
+      <div class="tool-card" data-tool="electric-field">
+        <h3>Electric Field</h3>
+        <p>Visualize electric field lines around charges. Supports point, line, ring, and surface charges. Click to place charges.</p>
+      </div>
+      <div class="tool-card" data-tool="flux">
+        <h3>Electric Flux</h3>
+        <p>Explore how electric flux depends on field strength and surface orientation.</p>
+      </div>
+      <div class="tool-card" data-tool="voltage">
+        <h3>Voltage & Equipotentials</h3>
+        <p>See equipotential lines and understand voltage relationships.</p>
+      </div>
+      <div class="tool-card" data-tool="gauss">
+        <h3>Gauss' Law</h3>
+        <p>Discover how flux through a closed surface relates to enclosed charge.</p>
+      </div>
     </div>
+
+    <!-- Electric Field Tool Section -->
+    <div class="tool-section" id="electric-field-section">
+      <h2>Electric Field Visualization</h2>
+      <p>Click on the canvas to place charges. Positive charges repel, negative charges attract. The field lines show the direction and strength of the electric field.</p>
+      <div class="info-box">
+        <strong>Formula:</strong> E = kq/r² where k = 9×10⁹ N⋅m²/C², q is charge, r is distance
+      </div>
+      <div class="controls">
+        <div class="control-group">
+          <label>Charge Type:</label>
+          <select id="charge-type" style="padding: 0.5rem; border: 1px solid var(--panel-border); border-radius: 6px; background: var(--panel-bg); color: var(--text);">
+            <option value="positive">Positive (+)</option>
+            <option value="negative">Negative (-)</option>
+          </select>
+        </div>
+        <div class="control-group">
+          <label>Charge Magnitude:</label>
+          <input type="range" id="charge-magnitude" min="1" max="10" value="5" step="0.5">
+          <span id="magnitude-value">5</span>
+        </div>
+        <button id="clear-field">Clear All</button>
+      </div>
+      <div class="canvas-container">
+        <div id="field-canvas-container" style="width: 100%; height: 600px;"></div>
+      </div>
+    </div>
+
+    <!-- Flux Tool Section -->
+    <div class="tool-section" id="flux-section">
+      <h2>Electric Flux</h2>
+      <p>Electric flux is the measure of electric field passing through a surface. Rotate the surface and see how the flux changes with angle.</p>
+      <div class="info-box">
+        <strong>Formula:</strong> Φ = E⋅A⋅cos(θ) where E is electric field, A is area, θ is angle between field and normal
+      </div>
+      <div class="controls">
+        <div class="control-group">
+          <label>Field Strength (N/C):</label>
+          <input type="range" id="flux-field-strength" min="1" max="20" value="10" step="0.5">
+          <span id="flux-field-value">10</span>
+        </div>
+        <div class="control-group">
+          <label>Surface Angle (degrees):</label>
+          <input type="range" id="flux-angle" min="0" max="180" value="0" step="5">
+          <span id="flux-angle-value">0</span>
+        </div>
+      </div>
+      <div class="canvas-container">
+        <canvas id="flux-canvas" width="800" height="600"></canvas>
+      </div>
+    </div>
+
+    <!-- Voltage Tool Section -->
+    <div class="tool-section" id="voltage-section">
+      <h2>Voltage & Equipotential Lines</h2>
+      <p>Equipotential lines connect points of equal voltage. They are always perpendicular to electric field lines.</p>
+      <div class="info-box">
+        <strong>Formula:</strong> V = kq/r where V is voltage, k = 9×10⁹ N⋅m²/C², q is charge, r is distance
+      </div>
+      <div class="controls">
+        <div class="control-group">
+          <label>Charge Type:</label>
+          <select id="voltage-charge-type" style="padding: 0.5rem; border: 1px solid var(--panel-border); border-radius: 6px; background: var(--panel-bg); color: var(--text);">
+            <option value="positive">Positive (+)</option>
+            <option value="negative">Negative (-)</option>
+          </select>
+        </div>
+        <div class="control-group">
+          <label>Charge Magnitude:</label>
+          <input type="range" id="voltage-charge-magnitude" min="1" max="10" value="5" step="0.5">
+          <span id="voltage-magnitude-value">5</span>
+        </div>
+        <button id="clear-voltage">Clear All</button>
+      </div>
+      <div class="canvas-container">
+        <canvas id="voltage-canvas" width="800" height="600"></canvas>
+      </div>
+    </div>
+
+    <!-- Gauss' Law Tool Section -->
+    <div class="tool-section" id="gauss-section">
+      <h2>Gauss' Law</h2>
+      <p>Gauss' law states that the electric flux through a closed surface is proportional to the charge enclosed.</p>
+      <div class="info-box">
+        <strong>Gauss' Law:</strong> Φ = Q_enc/ε₀ where Q_enc is enclosed charge, ε₀ = 8.85×10⁻¹² C²/N⋅m²
+      </div>
+      <div class="controls">
+        <div class="control-group">
+          <label>Point Charge:</label>
+          <input type="range" id="gauss-charge" min="-10" max="10" value="5" step="0.5">
+          <span id="gauss-charge-value">5</span>
+        </div>
+        <div class="control-group">
+          <label>Gaussian Surface Radius:</label>
+          <input type="range" id="gauss-radius" min="50" max="300" value="150" step="10">
+          <span id="gauss-radius-value">150</span>
+        </div>
+      </div>
+      <div class="canvas-container">
+        <canvas id="gauss-canvas" width="800" height="600"></canvas>
+      </div>
+    </div>
+
     <a href="index.html" class="back-button">Back to Home</a>
   </div>
   <script>
@@ -168,6 +314,67 @@
           document.body.classList.remove('dark');
           localStorage.setItem('theme', 'light');
         }
+      });
+
+      // Tool navigation
+      window.currentTool = null;
+      const toolCards = document.querySelectorAll('.tool-card');
+      const toolSections = document.querySelectorAll('.tool-section');
+
+      if (toolCards.length === 0) {
+        console.error('No tool cards found!');
+      } else {
+        console.log(`Found ${toolCards.length} tool cards`);
+      }
+
+      toolCards.forEach(card => {
+        card.addEventListener('click', (e) => {
+          e.preventDefault();
+          e.stopPropagation();
+          const tool = card.dataset.tool;
+          if (!tool) {
+            console.error('Tool card missing data-tool attribute!');
+            return;
+          }
+          
+          console.log('Tool card clicked:', tool);
+          
+          // Reset all cards
+          toolCards.forEach(c => {
+            if (c) c.style.opacity = '1';
+          });
+          
+          // Hide all sections
+          toolSections.forEach(s => {
+            if (s) s.classList.remove('active');
+          });
+          
+          // Show selected card and section
+          card.style.opacity = '0.7';
+          const targetSection = document.getElementById(`${tool}-section`);
+          if (targetSection) {
+            targetSection.classList.add('active');
+            window.currentTool = tool;
+            
+            // Initialize tool
+            if (tool === 'electric-field' && typeof initElectricField === 'function') {
+              initElectricField();
+            } else if (tool === 'flux' && typeof initFlux === 'function') {
+              initFlux();
+            } else if (tool === 'voltage' && typeof initVoltage === 'function') {
+              initVoltage();
+            } else if (tool === 'gauss' && typeof initGauss === 'function') {
+              initGauss();
+            }
+            
+            // Scroll to section smoothly
+            setTimeout(() => {
+              targetSection.scrollIntoView({ behavior: 'smooth', block: 'start' });
+            }, 100);
+          } else {
+            alert(`Tool "${tool}" is coming soon!`);
+          }
+        });
       });
     });
   </script>
