@@ -161,6 +161,101 @@
       font-size: 0.9rem;
       line-height: 1.5;
     }
+    .tool-section {
+      display: none;
+      background: var(--panel-bg);
+      border: 1px solid var(--panel-border);
+      border-radius: 20px;
+      padding: 2rem;
+      box-shadow: 0 10px 40px rgba(0,0,0,0.2);
+      margin: 2rem 0;
+    }
+    .tool-section.active {
+      display: block;
+    }
+    .tool-section h2 {
+      color: var(--accent);
+      margin-bottom: 1rem;
+    }
+    .tool-section p {
+      color: var(--subtle);
+      margin-bottom: 1.5rem;
+      line-height: 1.6;
+    }
+    .canvas-container {
+      background: #fff;
+      border: 2px solid var(--panel-border);
+      border-radius: 12px;
+      margin: 1rem 0;
+      position: relative;
+      overflow: hidden;
+    }
+    body.dark .canvas-container {
+      background: #1a1a1a;
+    }
+    canvas {
+      display: block;
+      cursor: crosshair;
+    }
+    .controls {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 1rem;
+      margin: 1rem 0;
+      align-items: center;
+    }
+    .control-group {
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+    }
+    .control-group label {
+      font-size: 0.9rem;
+      color: var(--subtle);
+    }
+    .control-group input[type="number"],
+    .control-group input[type="range"],
+    .control-group select {
+      padding: 0.5rem;
+      border: 1px solid var(--panel-border);
+      border-radius: 6px;
+      background: var(--panel-bg);
+      color: var(--text);
+      font-size: 0.9rem;
+    }
+    .control-group input[type="range"] {
+      width: 150px;
+    }
+    button {
+      padding: 0.75rem 1.5rem;
+      font-size: 1rem;
+      font-weight: 600;
+      color: white;
+      background: linear-gradient(135deg, var(--btn-start), var(--btn-end));
+      border: none;
+      border-radius: 8px;
+      cursor: pointer;
+      transition: transform 0.2s, box-shadow 0.2s;
+    }
+    button:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 4px 12px rgba(0,0,0,0.2);
+    }
+    button:active {
+      transform: translateY(0);
+    }
+    .info-box {
+      background: rgba(26, 35, 126, 0.1);
+      border-left: 4px solid var(--accent);
+      padding: 1rem;
+      border-radius: 6px;
+      margin: 1rem 0;
+      font-size: 0.9rem;
+      color: var(--subtle);
+    }
+    body.dark .info-box {
+      background: rgba(199, 210, 254, 0.1);
+    }
   </style>
 </head>
 <body>
@@ -204,7 +299,7 @@
       <div class="controls">
         <div class="control-group">
           <label>Charge Type:</label>
-          <select id="charge-type" style="padding: 0.5rem; border: 1px solid var(--panel-border); border-radius: 6px; background: var(--panel-bg); color: var(--text);">
+          <select id="charge-type">
             <option value="positive">Positive (+)</option>
             <option value="negative">Negative (-)</option>
           </select>
@@ -217,7 +312,7 @@
         <button id="clear-field">Clear All</button>
       </div>
       <div class="canvas-container">
-        <div id="field-canvas-container" style="width: 100%; height: 600px;"></div>
+        <canvas id="field-canvas" width="800" height="600"></canvas>
       </div>
     </div>
 
@@ -255,7 +350,7 @@
       <div class="controls">
         <div class="control-group">
           <label>Charge Type:</label>
-          <select id="voltage-charge-type" style="padding: 0.5rem; border: 1px solid var(--panel-border); border-radius: 6px; background: var(--panel-bg); color: var(--text);">
+          <select id="voltage-charge-type">
             <option value="positive">Positive (+)</option>
             <option value="negative">Negative (-)</option>
           </select>
@@ -316,16 +411,15 @@
         }
       });
 
-      // Tool navigation
+      // Tool navigation - only show one section at a time
       window.currentTool = null;
       const toolCards = document.querySelectorAll('.tool-card');
       const toolSections = document.querySelectorAll('.tool-section');
 
-      if (toolCards.length === 0) {
-        console.error('No tool cards found!');
-      } else {
-        console.log(`Found ${toolCards.length} tool cards`);
-      }
+      // Ensure all sections are hidden initially
+      toolSections.forEach(section => {
+        section.classList.remove('active');
+      });
 
       toolCards.forEach(card => {
         card.addEventListener('click', (e) => {
@@ -337,16 +431,14 @@
             return;
           }
           
-          console.log('Tool card clicked:', tool);
-          
-          // Reset all cards
+          // Reset all cards opacity
           toolCards.forEach(c => {
             if (c) c.style.opacity = '1';
           });
           
-          // Hide all sections
+          // Hide ALL sections first
           toolSections.forEach(s => {
-            if (s) s.classList.remove('active');
+            s.classList.remove('active');
           });
           
           // Show selected card and section
@@ -356,7 +448,7 @@
             targetSection.classList.add('active');
             window.currentTool = tool;
             
-            // Initialize tool
+            // Initialize tool if function exists
             if (tool === 'electric-field' && typeof initElectricField === 'function') {
               initElectricField();
             } else if (tool === 'flux' && typeof initFlux === 'function') {
@@ -372,10 +464,190 @@
               targetSection.scrollIntoView({ behavior: 'smooth', block: 'start' });
             }, 100);
           } else {
-            alert(`Tool "${tool}" is coming soon!`);
+            console.error(`Section not found: ${tool}-section`);
           }
         });
       });
+
+      // Basic initialization functions for tools
+      let fieldCanvasInitialized = false;
+      function initElectricField() {
+        const canvas = document.getElementById('field-canvas');
+        if (!canvas || fieldCanvasInitialized) return;
+        fieldCanvasInitialized = true;
+        
+        const ctx = canvas.getContext('2d');
+        const isDark = document.body.classList.contains('dark');
+        
+        // Clear and set background
+        ctx.fillStyle = isDark ? '#1a1a1a' : '#ffffff';
+        ctx.fillRect(0, 0, canvas.width, canvas.height);
+        
+        // Draw placeholder text
+        ctx.fillStyle = isDark ? '#ffffff' : '#000000';
+        ctx.font = '20px Arial';
+        ctx.textAlign = 'center';
+        ctx.fillText('Electric Field Simulator - Click to place charges', canvas.width / 2, canvas.height / 2);
+        
+        // Update magnitude display
+        document.getElementById('charge-magnitude').addEventListener('input', (e) => {
+          document.getElementById('magnitude-value').textContent = e.target.value;
+        });
+        
+        // Add click handler
+        canvas.addEventListener('click', (e) => {
+          const rect = canvas.getBoundingClientRect();
+          const x = e.clientX - rect.left;
+          const y = e.clientY - rect.top;
+          const type = document.getElementById('charge-type').value;
+          const magnitude = parseFloat(document.getElementById('charge-magnitude').value);
+          
+          // Draw charge
+          ctx.beginPath();
+          ctx.arc(x, y, 10 + magnitude * 2, 0, Math.PI * 2);
+          ctx.fillStyle = type === 'positive' ? (isDark ? '#fca5a5' : '#e53935') : (isDark ? '#93c5fd' : '#1976d2');
+          ctx.fill();
+          ctx.strokeStyle = isDark ? '#fff' : '#000';
+          ctx.lineWidth = 2;
+          ctx.stroke();
+          ctx.fillStyle = '#fff';
+          ctx.font = 'bold 16px Arial';
+          ctx.fillText(type === 'positive' ? '+' : '-', x, y + 5);
+        });
+        
+        // Clear button
+        document.getElementById('clear-field').addEventListener('click', () => {
+          ctx.fillStyle = isDark ? '#1a1a1a' : '#ffffff';
+          ctx.fillRect(0, 0, canvas.width, canvas.height);
+          ctx.fillStyle = isDark ? '#ffffff' : '#000000';
+          ctx.fillText('Electric Field Simulator - Click to place charges', canvas.width / 2, canvas.height / 2);
+        });
+      }
+
+      let fluxCanvasInitialized = false;
+      function initFlux() {
+        const canvas = document.getElementById('flux-canvas');
+        if (!canvas || fluxCanvasInitialized) return;
+        fluxCanvasInitialized = true;
+        
+        const ctx = canvas.getContext('2d');
+        const isDark = document.body.classList.contains('dark');
+        
+        function drawFlux() {
+          ctx.fillStyle = isDark ? '#1a1a1a' : '#ffffff';
+          ctx.fillRect(0, 0, canvas.width, canvas.height);
+          
+          const fieldStrength = parseFloat(document.getElementById('flux-field-strength').value);
+          const angle = parseFloat(document.getElementById('flux-angle').value) * Math.PI / 180;
+          const centerX = canvas.width / 2;
+          const centerY = canvas.height / 2;
+          
+          // Draw field lines
+          ctx.strokeStyle = isDark ? 'rgba(110, 231, 183, 0.4)' : 'rgba(38, 166, 154, 0.4)';
+          ctx.lineWidth = 2;
+          for (let x = 50; x < canvas.width; x += 40) {
+            ctx.beginPath();
+            ctx.moveTo(x, 0);
+            ctx.lineTo(x, canvas.height);
+            ctx.stroke();
+          }
+          
+          // Draw surface
+          ctx.save();
+          ctx.translate(centerX, centerY);
+          ctx.rotate(angle);
+          ctx.fillStyle = isDark ? 'rgba(129, 140, 248, 0.3)' : 'rgba(26, 35, 126, 0.2)';
+          ctx.fillRect(-100, -50, 200, 100);
+          ctx.strokeStyle = isDark ? 'rgba(129, 140, 248, 0.8)' : 'rgba(26, 35, 126, 0.8)';
+          ctx.lineWidth = 3;
+          ctx.strokeRect(-100, -50, 200, 100);
+          ctx.restore();
+        }
+        
+        drawFlux();
+        document.getElementById('flux-field-strength').addEventListener('input', (e) => {
+          document.getElementById('flux-field-value').textContent = e.target.value;
+          drawFlux();
+        });
+        document.getElementById('flux-angle').addEventListener('input', (e) => {
+          document.getElementById('flux-angle-value').textContent = e.target.value;
+          drawFlux();
+        });
+      }
+
+      let voltageCanvasInitialized = false;
+      function initVoltage() {
+        const canvas = document.getElementById('voltage-canvas');
+        if (!canvas || voltageCanvasInitialized) return;
+        voltageCanvasInitialized = true;
+        
+        const ctx = canvas.getContext('2d');
+        const isDark = document.body.classList.contains('dark');
+        
+        ctx.fillStyle = isDark ? '#1a1a1a' : '#ffffff';
+        ctx.fillRect(0, 0, canvas.width, canvas.height);
+        ctx.fillStyle = isDark ? '#ffffff' : '#000000';
+        ctx.font = '20px Arial';
+        ctx.textAlign = 'center';
+        ctx.fillText('Voltage & Equipotentials - Coming soon', canvas.width / 2, canvas.height / 2);
+        
+        // Update magnitude display
+        document.getElementById('voltage-charge-magnitude').addEventListener('input', (e) => {
+          document.getElementById('voltage-magnitude-value').textContent = e.target.value;
+        });
+      }
+
+      let gaussCanvasInitialized = false;
+      function initGauss() {
+        const canvas = document.getElementById('gauss-canvas');
+        if (!canvas || gaussCanvasInitialized) return;
+        gaussCanvasInitialized = true;
+        
+        const ctx = canvas.getContext('2d');
+        const isDark = document.body.classList.contains('dark');
+        
+        function drawGauss() {
+          ctx.fillStyle = isDark ? '#1a1a1a' : '#ffffff';
+          ctx.fillRect(0, 0, canvas.width, canvas.height);
+          
+          const charge = parseFloat(document.getElementById('gauss-charge').value);
+          const radius = parseFloat(document.getElementById('gauss-radius').value);
+          const centerX = canvas.width / 2;
+          const centerY = canvas.height / 2;
+          
+          // Draw Gaussian surface
+          ctx.strokeStyle = isDark ? 'rgba(129, 140, 248, 0.8)' : 'rgba(26, 35, 126, 0.8)';
+          ctx.lineWidth = 3;
+          ctx.setLineDash([10, 5]);
+          ctx.beginPath();
+          ctx.arc(centerX, centerY, radius, 0, Math.PI * 2);
+          ctx.stroke();
+          ctx.setLineDash([]);
+          
+          // Draw charge
+          const chargeRadius = Math.abs(charge) * 3 + 8;
+          ctx.beginPath();
+          ctx.arc(centerX, centerY, chargeRadius, 0, Math.PI * 2);
+          ctx.fillStyle = charge > 0 ? (isDark ? '#fca5a5' : '#e53935') : (isDark ? '#93c5fd' : '#1976d2');
+          ctx.fill();
+          ctx.strokeStyle = isDark ? '#fff' : '#000';
+          ctx.lineWidth = 2;
+          ctx.stroke();
+          ctx.fillStyle = '#fff';
+          ctx.font = 'bold 16px Arial';
+          ctx.fillText(charge > 0 ? '+' : '-', centerX, centerY + 5);
+        }
+        
+        drawGauss();
+        document.getElementById('gauss-charge').addEventListener('input', (e) => {
+          document.getElementById('gauss-charge-value').textContent = e.target.value;
+          drawGauss();
+        });
+        document.getElementById('gauss-radius').addEventListener('input', (e) => {
+          document.getElementById('gauss-radius-value').textContent = e.target.value;
+          drawGauss();
+        });
+      }
     });
   </script>
 </body>
