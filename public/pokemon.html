@@ -1,0 +1,440 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Pokémon Collection</title>
+    <style>
+      * {
+        box-sizing: border-box;
+      }
+      :root {
+        --bg-start: #e3f2fd;
+        --bg-end: #f3e5f5;
+        --text: rgba(0, 0, 0, 0.87);
+        --subtle: rgba(0, 0, 0, 0.65);
+        --panel-bg: rgba(255, 255, 255, 0.92);
+        --panel-border: rgba(26, 35, 126, 0.08);
+        --panel-shadow: rgba(26, 35, 126, 0.12);
+        --panel-shadow-hover: rgba(26, 35, 126, 0.2);
+        --accent: #1a237e;
+        --accent-soft: #283593;
+        --tag-bg: rgba(30, 136, 229, 0.15);
+        --tag-text: #1a237e;
+        --btn-start: #1e88e5;
+        --btn-end: #3949ab;
+      }
+      body.dark {
+        --bg-start: #161925;
+        --bg-end: #1f2933;
+        --text: rgba(255, 255, 255, 0.95);
+        --subtle: rgba(255, 255, 255, 0.7);
+        --panel-bg: rgba(26, 32, 44, 0.95);
+        --panel-border: rgba(197, 197, 255, 0.12);
+        --panel-shadow: rgba(0, 0, 0, 0.4);
+        --panel-shadow-hover: rgba(0, 0, 0, 0.55);
+        --accent: #a5b4fc;
+        --accent-soft: #c7d2fe;
+        --tag-bg: rgba(99, 102, 241, 0.25);
+        --tag-text: #c7d2fe;
+        --btn-start: #6366f1;
+        --btn-end: #4f46e5;
+      }
+      body {
+        margin: 0;
+        font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+        background: linear-gradient(135deg, var(--bg-start), var(--bg-end));
+        min-height: 100vh;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        padding: 2rem 1rem;
+        color: var(--text);
+        transition: background 0.3s ease, color 0.3s ease;
+      }
+      header {
+        width: 100%;
+        max-width: 960px;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 2rem;
+      }
+      h1 {
+        margin: 0;
+        font-size: 2.5rem;
+        color: var(--accent);
+        text-shadow: 1px 2px 6px rgba(0, 0, 0, 0.08);
+        transition: color 0.3s ease, text-shadow 0.3s ease;
+      }
+      body.dark h1 {
+        text-shadow: 2px 4px 12px rgba(0, 0, 0, 0.35);
+      }
+      .header-actions {
+        display: flex;
+        align-items: center;
+        gap: 1rem;
+      }
+      .toggle {
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+      }
+      .toggle span {
+        font-size: 0.95rem;
+        color: var(--subtle);
+      }
+      .switch {
+        position: relative;
+        width: 46px;
+        height: 26px;
+      }
+      .switch input {
+        opacity: 0;
+        width: 0;
+        height: 0;
+      }
+      .slider {
+        position: absolute;
+        inset: 0;
+        cursor: pointer;
+        background: #cfd8dc;
+        transition: 0.2s;
+        border-radius: 999px;
+      }
+      .slider:before {
+        content: "";
+        position: absolute;
+        height: 20px;
+        width: 20px;
+        left: 3px;
+        top: 3px;
+        background: #fff;
+        transition: 0.2s;
+        border-radius: 50%;
+        box-shadow: 0 1px 3px rgba(0, 0, 0, 0.3);
+      }
+      input:checked + .slider {
+        background: #37474f;
+      }
+      input:checked + .slider:before {
+        transform: translateX(20px);
+      }
+      a.button {
+        display: inline-block;
+        padding: 0.75rem 1.5rem;
+        background: linear-gradient(135deg, var(--btn-start), var(--btn-end));
+        color: white;
+        border-radius: 999px;
+        text-decoration: none;
+        font-weight: 600;
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+        transition: transform 0.2s ease, box-shadow 0.2s ease;
+      }
+      a.button:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 6px 18px rgba(0, 0, 0, 0.25);
+      }
+      #status {
+        margin-bottom: 1.5rem;
+        color: var(--subtle);
+        font-size: 1rem;
+        transition: color 0.3s ease;
+      }
+      .grid {
+        width: 100%;
+        max-width: 960px;
+        display: grid;
+        gap: 1.5rem;
+        grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+      }
+      .card {
+        background: var(--panel-bg);
+        border-radius: 16px;
+        padding: 1.25rem;
+        box-shadow: 0 12px 25px var(--panel-shadow);
+        border: 1px solid var(--panel-border);
+        display: flex;
+        flex-direction: column;
+        gap: 0.75rem;
+        transition: transform 0.2s ease, box-shadow 0.2s ease, background 0.3s ease, border-color 0.3s ease;
+      }
+      .card:hover {
+        transform: translateY(-4px);
+        box-shadow: 0 16px 32px var(--panel-shadow-hover);
+      }
+      .card h2 {
+        margin: 0;
+        font-size: 1.5rem;
+        color: var(--accent-soft);
+        transition: color 0.3s ease;
+      }
+      .card .subheading {
+        margin: 0;
+        font-size: 0.9rem;
+        font-weight: 600;
+        letter-spacing: 0.04em;
+        color: var(--subtle);
+        text-transform: uppercase;
+      }
+      .tag {
+        display: inline-flex;
+        align-self: flex-start;
+        padding: 0.25rem 0.75rem;
+        border-radius: 999px;
+        font-size: 0.85rem;
+        font-weight: 600;
+        color: var(--tag-text);
+        background: var(--tag-bg);
+        transition: color 0.3s ease, background 0.3s ease;
+      }
+      .description {
+        margin: 0;
+        font-size: 0.95rem;
+        color: var(--subtle);
+        transition: color 0.3s ease;
+      }
+      .empty-state {
+        text-align: center;
+        color: var(--subtle);
+      }
+      .card img {
+        width: 100%;
+        max-height: 200px;
+        object-fit: contain;
+        border-radius: 12px;
+        background: rgba(26, 35, 126, 0.08);
+        padding: 0.5rem;
+      }
+      .meta {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 0.5rem;
+        font-size: 0.85rem;
+        color: var(--subtle);
+      }
+      .meta span {
+        background: rgba(30, 136, 229, 0.15);
+        padding: 0.25rem 0.75rem;
+        border-radius: 999px;
+      }
+      #status.error {
+        color: #c62828;
+      }
+      #status.success {
+        color: #1b5e20;
+      }
+      .loader {
+        display: inline-block;
+        width: 1em;
+        height: 1em;
+        border: 2px solid rgba(26, 35, 126, 0.2);
+        border-top-color: var(--btn-start);
+        border-radius: 50%;
+        animation: spin 0.9s linear infinite;
+        margin-right: 0.5rem;
+        vertical-align: -0.125em;
+      }
+      @keyframes spin {
+        to {
+          transform: rotate(360deg);
+        }
+      }
+      @media (max-width: 600px) {
+        header {
+          flex-direction: column;
+          gap: 1rem;
+          align-items: flex-start;
+        }
+        .grid {
+          grid-template-columns: 1fr;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <header>
+      <h1>Pokémon Collection</h1>
+      <div class="header-actions">
+        <div class="toggle">
+          <span>Dark Mode</span>
+          <label class="switch">
+            <input id="theme-toggle" type="checkbox" aria-label="Toggle dark mode">
+            <span class="slider"></span>
+          </label>
+        </div>
+        <a class="button" href="index.html">← Back to Home</a>
+      </div>
+    </header>
+    <p id="status"><span class="loader" aria-hidden="true"></span>Loading Pokédex entries…</p>
+    <div id="pokemon-grid" class="grid" hidden></div>
+    <template id="pokemon-card-template">
+      <article class="card">
+        <span class="tag" data-field="type" hidden></span>
+        <h2 data-field="name"></h2>
+        <p class="subheading" data-field="number" hidden></p>
+        <img data-field="image" alt="" hidden>
+        <div class="meta" data-field="meta" hidden></div>
+        <p class="description" data-field="description" hidden></p>
+      </article>
+    </template>
+
+    <script type="module">
+      import { initializeApp } from "https://www.gstatic.com/firebasejs/10.14.0/firebase-app.js";
+      import {
+        getFirestore,
+        collection,
+        getDocs,
+        query,
+        orderBy
+      } from "https://www.gstatic.com/firebasejs/10.14.0/firebase-firestore.js";
+
+      const firebaseConfig = {
+        apiKey: "AIzaSyCOCPZynUptXdU85zzEcMby9_GVR-xGbWU",
+        authDomain: "personalwebsite-zidaan.firebaseapp.com",
+        projectId: "personalwebsite-zidaan",
+        storageBucket: "personalwebsite-zidaan.firebasestorage.app",
+        messagingSenderId: "759592662801",
+        appId: "1:759592662801:web:28254de6df5384c0713eb0",
+        measurementId: "G-8SXEF9YWKK"
+      };
+
+      const app = initializeApp(firebaseConfig);
+      const db = getFirestore(app);
+
+      const statusEl = document.getElementById("status");
+      const gridEl = document.getElementById("pokemon-grid");
+      const cardTemplate = document.getElementById("pokemon-card-template");
+
+      const themeToggle = document.getElementById("theme-toggle");
+      const savedTheme = localStorage.getItem("theme") || "light";
+      if (savedTheme === "dark") {
+        document.body.classList.add("dark");
+        themeToggle.checked = true;
+      }
+
+      themeToggle?.addEventListener("change", () => {
+        if (themeToggle.checked) {
+          document.body.classList.add("dark");
+          localStorage.setItem("theme", "dark");
+        } else {
+          document.body.classList.remove("dark");
+          localStorage.setItem("theme", "light");
+        }
+      });
+
+  function setStatus(message, variant = "default") {
+    statusEl.textContent = message;
+    statusEl.className = variant === "error" ? "error" : variant === "success" ? "success" : "";
+  }
+
+  function normalizePokemon(docData, docId) {
+    const data = { id: docId, ...docData };
+    const name = data.name ?? data.pokemonName ?? data.title ?? `Pokémon #${data.number ?? ""}`.trim();
+    const type = data.type ?? data.types ?? data.element ?? null;
+    const description = data.description ?? data.summary ?? data.bio ?? null;
+    const number = data.number ?? data.dexNumber ?? data.pokedex ?? null;
+    const sprite =
+      data.image ??
+      data.imageUrl ??
+      data.sprite ??
+      data.photo ??
+      (Array.isArray(data.images) ? data.images[0] : null);
+    const abilities = data.abilities ?? data.moves ?? null;
+    const region = data.region ?? data.origin ?? null;
+
+    return { name, type, description, number, sprite, abilities, region };
+  }
+
+  function hydrateCard(pokemon) {
+    const card = cardTemplate.content.cloneNode(true);
+
+    const nameEl = card.querySelector('[data-field="name"]');
+    const typeEl = card.querySelector('[data-field="type"]');
+    const numberEl = card.querySelector('[data-field="number"]');
+    const descriptionEl = card.querySelector('[data-field="description"]');
+    const imageEl = card.querySelector('[data-field="image"]');
+    const metaEl = card.querySelector('[data-field="meta"]');
+
+    nameEl.textContent = pokemon.name ?? "Unknown Pokémon";
+
+    if (pokemon.type) {
+      const typeText = Array.isArray(pokemon.type) ? pokemon.type.join(" / ") : pokemon.type;
+      typeEl.textContent = typeText;
+      typeEl.hidden = false;
+    }
+
+    if (pokemon.number) {
+      numberEl.textContent = `Dex #${pokemon.number}`;
+      numberEl.hidden = false;
+    }
+
+    if (pokemon.description) {
+      descriptionEl.textContent = pokemon.description;
+      descriptionEl.hidden = false;
+    }
+
+    const metaChips = [];
+    if (pokemon.region) {
+      metaChips.push(`Region: ${pokemon.region}`);
+    }
+    if (pokemon.abilities) {
+      const abilitiesText = Array.isArray(pokemon.abilities)
+        ? pokemon.abilities.join(", ")
+        : pokemon.abilities;
+      metaChips.push(`Abilities: ${abilitiesText}`);
+    }
+    if (metaChips.length) {
+      metaEl.hidden = false;
+      metaEl.innerHTML = "";
+      metaChips.forEach((chip) => {
+        const span = document.createElement("span");
+        span.textContent = chip;
+        metaEl.appendChild(span);
+      });
+    }
+
+    if (pokemon.sprite) {
+      imageEl.src = pokemon.sprite;
+      imageEl.alt = `${pokemon.name ?? "Pokémon"} artwork`;
+      imageEl.hidden = false;
+    }
+
+    return card;
+  }
+
+      async function loadPokemon() {
+        try {
+          const pokemonQuery = query(collection(db, "pokemon"), orderBy("name"));
+          const snapshot = await getDocs(pokemonQuery);
+
+          if (snapshot.empty) {
+        setStatus("You haven’t added any Pokémon yet.");
+        statusEl.classList.add("empty-state");
+            return;
+          }
+
+          const fragment = document.createDocumentFragment();
+          snapshot.forEach((doc) => {
+        const pokemon = normalizePokemon(doc.data(), doc.id);
+        fragment.appendChild(hydrateCard(pokemon));
+          });
+
+          gridEl.appendChild(fragment);
+          gridEl.hidden = false;
+      setStatus(`Showing ${snapshot.size} Pokémon`, "success");
+        } catch (error) {
+          console.error("Error loading Pokémon collection:", error);
+      const helpfulMessage =
+        error.code === "permission-denied"
+          ? "Read permission denied. Update your Firestore rules to allow reads or sign in."
+          : "Failed to load Pokémon. Check the browser console for details.";
+      setStatus(helpfulMessage, "error");
+        }
+      }
+
+      loadPokemon();
+    </script>
+  </body>
+</html>
+

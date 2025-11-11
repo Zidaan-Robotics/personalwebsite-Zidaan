@@ -465,12 +465,10 @@
         let isSpinning = false;
         // SPIN_COST is dynamic based on bet input
         const SPIN_DURATION_MS = 7000;
-        const FAST_SPIN_DURATION_MS = 500; // fast spin when skip is pressed
         let lastFinalRotation = 0; // degrees (normalized 0..359)
         let lastTargetIndex = 0; // segment index selected for the spin
         let spinTimeoutId = null; // active spin timeout id
         let activeFinalRotation = 0; // full absolute rotation used for the running animation
-        let skipPressed = false; // track if skip was pressed
         
         function getBet() {
           // Enforce natural number >= 1
@@ -553,8 +551,7 @@
           const theta = ((90 + lastFinalRotation) % 360 + 360) % 360; // angle from right at top pointer
           const winningIndex = Math.floor(theta / segmentAngleDeg);
           const betNow = getBet();
-          const oppositeIndex = (winningIndex + Math.floor(segments / 2)) % segments;
-          const payout = Math.round(multipliers[oppositeIndex] * betNow);
+          const payout = Math.round(multipliers[winningIndex] * betNow);
           if (payout > 0) {
             bankroll += payout;
             resultEl.textContent = `You won ${formatMoney(payout)}!`;
@@ -576,7 +573,6 @@
         function spin() {
           if (isSpinning) return;
           isSpinning = true;
-          skipPressed = false;
           spinButton.disabled = true;
           if (skipButton) skipButton.disabled = false;
           resultEl.textContent = 'Spinning...';
@@ -605,6 +601,7 @@
           const finalRotation = extraSpins * 360 + alignToTop;
           lastFinalRotation = ((finalRotation % 360) + 360) % 360; // normalize 0..359
           activeFinalRotation = finalRotation;
+          lastTargetIndex = targetIndex;
 
           canvas.style.transition = `transform ${SPIN_DURATION_MS}ms cubic-bezier(0.23, 1, 0.32, 1)`;
           canvas.style.transform = `rotate(${finalRotation}deg)`;
@@ -621,27 +618,7 @@
           betInput.addEventListener('blur', () => { getBet(); drawWheel(); });
         }
         if (spinButton) spinButton.addEventListener('click', spin);
-        if (skipButton) skipButton.addEventListener('click', () => {
-          if (!isSpinning || skipPressed) return;
-          skipPressed = true;
-          // Clear existing timeout
-          if (spinTimeoutId !== null) { clearTimeout(spinTimeoutId); spinTimeoutId = null; }
-          
-          // Get current transform to preserve position
-          const currentTransform = canvas.style.transform;
-          
-          // Force a reflow to ensure current state is applied
-          void canvas.offsetWidth;
-          
-          // Change to fast transition while keeping the same final target
-          canvas.style.transition = `transform ${FAST_SPIN_DURATION_MS}ms cubic-bezier(0.23, 1, 0.32, 1)`;
-          canvas.style.transform = `rotate(${activeFinalRotation}deg)`;
-          
-          // Update timeout to match fast animation
-          spinTimeoutId = setTimeout(() => {
-            finalizeSpin();
-          }, FAST_SPIN_DURATION_MS + 50);
-        });
+        if (skipButton) skipButton.addEventListener('click', () => { if (isSpinning) finalizeSpin(); });
         if (openRouletteBtn) openRouletteBtn.addEventListener('click', showRoulette);
         if (goHomeBtn) goHomeBtn.addEventListener('click', showHome);
         if (openBlackjackBtn) openBlackjackBtn.addEventListener('click', showBlackjack);
