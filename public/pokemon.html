@@ -23,6 +23,8 @@
         --tag-text: #1a237e;
         --btn-start: #1e88e5;
         --btn-end: #3949ab;
+        --btn-secondary-start: #f093fb;
+        --btn-secondary-end: #f5576c;
       }
       body.dark {
         --bg-start: #161925;
@@ -39,6 +41,8 @@
         --tag-text: #c7d2fe;
         --btn-start: #6366f1;
         --btn-end: #4f46e5;
+        --btn-secondary-start: #a78bfa;
+        --btn-secondary-end: #7c3aed;
       }
       body {
         margin: 0;
@@ -131,9 +135,67 @@
         box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
         transition: transform 0.2s ease, box-shadow 0.2s ease;
       }
-      a.button:hover {
+      a.button:hover,
+      button.button:hover {
         transform: translateY(-2px);
         box-shadow: 0 6px 18px rgba(0, 0, 0, 0.25);
+      }
+      button.button {
+        border: none;
+        cursor: pointer;
+        background: linear-gradient(135deg, var(--btn-start), var(--btn-end));
+        color: white;
+        border-radius: 999px;
+        font-weight: 600;
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+        transition: transform 0.2s ease, box-shadow 0.2s ease;
+      }
+      button.button.button-secondary {
+        background: linear-gradient(135deg, var(--btn-secondary-start), var(--btn-secondary-end));
+      }
+      button.button.button-secondary:hover {
+        background: linear-gradient(135deg, var(--btn-secondary-end), var(--btn-secondary-start));
+      }
+      #add-pokemon-btn {
+        background: linear-gradient(135deg, var(--btn-start), var(--btn-end)) !important;
+        color: white !important;
+        padding: 0.875rem 1.75rem !important;
+        font-size: 1.05rem !important;
+        font-weight: 600 !important;
+        border-radius: 50px !important;
+        box-shadow: 0 4px 15px rgba(30, 136, 229, 0.3) !important;
+        transition: all 0.3s ease !important;
+        position: relative !important;
+        overflow: hidden !important;
+      }
+      #add-pokemon-btn::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: -100%;
+        width: 100%;
+        height: 100%;
+        background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
+        transition: left 0.5s;
+      }
+      #add-pokemon-btn:hover::before {
+        left: 100%;
+      }
+      #add-pokemon-btn:hover {
+        transform: translateY(-3px) scale(1.05) !important;
+        box-shadow: 0 8px 25px rgba(30, 136, 229, 0.4) !important;
+        background: linear-gradient(135deg, var(--btn-end), var(--btn-start)) !important;
+      }
+      #add-pokemon-btn:active {
+        transform: translateY(-1px) scale(1.02) !important;
+        box-shadow: 0 4px 15px rgba(30, 136, 229, 0.3) !important;
+      }
+      body.dark #add-pokemon-btn {
+        background: linear-gradient(135deg, var(--btn-start), var(--btn-end)) !important;
+        box-shadow: 0 4px 15px rgba(99, 102, 241, 0.3) !important;
+      }
+      body.dark #add-pokemon-btn:hover {
+        box-shadow: 0 8px 25px rgba(99, 102, 241, 0.5) !important;
       }
       #status {
         margin-bottom: 1.5rem;
@@ -218,6 +280,63 @@
         padding: 0.25rem 0.75rem;
         border-radius: 999px;
       }
+      .stats-table {
+        width: 100%;
+        border-collapse: collapse;
+        margin-top: 0.5rem;
+        font-size: 0.9rem;
+      }
+      .stats-table tbody tr {
+        border-bottom: 1px solid var(--panel-border);
+      }
+      .stats-table tbody tr:last-child {
+        border-bottom: none;
+      }
+      .stats-table td {
+        padding: 0.5rem 0.25rem;
+        color: var(--subtle);
+      }
+      .stats-table td:first-child {
+        font-weight: 600;
+        color: var(--accent-soft);
+        text-align: left;
+        width: 60%;
+      }
+      .stats-table td:last-child {
+        text-align: right;
+        color: var(--text);
+        font-weight: 500;
+      }
+      .moves-container {
+        margin-top: 0.75rem;
+      }
+      .moves-list {
+        display: flex;
+        flex-direction: column;
+        gap: 0.5rem;
+      }
+      .moves-list li {
+        padding: 0.5rem 0.75rem;
+        background: var(--tag-bg);
+        color: var(--tag-text);
+        border-radius: 8px;
+        font-size: 0.9rem;
+        font-weight: 500;
+      }
+      .card-actions {
+        padding-top: 0.75rem;
+        border-top: 1px solid var(--panel-border);
+      }
+      .card-actions .button {
+        background: linear-gradient(135deg, var(--btn-start), var(--btn-end));
+        color: white;
+      }
+      .card-actions .button.button-secondary {
+        background: linear-gradient(135deg, var(--btn-secondary-start), var(--btn-secondary-end));
+      }
+      .card-actions .button.button-secondary:hover {
+        background: linear-gradient(135deg, var(--btn-secondary-end), var(--btn-secondary-start));
+      }
       #status.error {
         color: #c62828;
       }
@@ -240,14 +359,205 @@
           transform: rotate(360deg);
         }
       }
+      .modal {
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background: rgba(0, 0, 0, 0.5);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        z-index: 1000;
+        backdrop-filter: blur(4px);
+        pointer-events: auto;
+      }
+      .modal[hidden],
+      .modal[style*="display: none"] {
+        display: none !important;
+      }
+      .modal-content {
+        background: var(--panel-bg);
+        border-radius: 16px;
+        padding: 2rem;
+        max-width: 600px;
+        width: 90%;
+        max-height: 90vh;
+        overflow-y: auto;
+        box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+        border: 1px solid var(--panel-border);
+        position: relative;
+        z-index: 1001;
+        pointer-events: auto;
+      }
+      .modal-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 1.5rem;
+      }
+      .modal-header h2 {
+        margin: 0;
+        color: var(--accent);
+      }
+      .modal-close {
+        background: none;
+        border: none;
+        font-size: 2rem;
+        color: var(--subtle);
+        cursor: pointer;
+        line-height: 1;
+        padding: 0.25rem;
+        width: 2.5rem;
+        height: 2.5rem;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        border-radius: 50%;
+        transition: background 0.2s, color 0.2s;
+        font-weight: 300;
+        z-index: 1002;
+        position: relative;
+        pointer-events: auto;
+        user-select: none;
+      }
+      .modal-close:hover {
+        background: rgba(244, 67, 54, 0.15);
+        color: #f44336;
+      }
+      .modal-close:active {
+        background: rgba(244, 67, 54, 0.25);
+      }
+      .modal-close:focus {
+        outline: 2px solid var(--btn-start);
+        outline-offset: 2px;
+      }
+      .form-group {
+        margin-bottom: 1rem;
+      }
+      .form-group label {
+        display: block;
+        margin-bottom: 0.5rem;
+        font-weight: 600;
+        color: var(--accent-soft);
+        font-size: 0.9rem;
+      }
+      .form-group input,
+      .form-group select {
+        width: 100%;
+        padding: 0.75rem;
+        border: 1px solid var(--panel-border);
+        border-radius: 8px;
+        background: var(--panel-bg);
+        color: var(--text);
+        font-size: 1rem;
+        transition: border-color 0.2s, box-shadow 0.2s;
+      }
+      .form-group input:focus,
+      .form-group select:focus {
+        outline: none;
+        border-color: var(--btn-start);
+        box-shadow: 0 0 0 3px rgba(30, 136, 229, 0.1);
+      }
+      .form-row {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+        gap: 1rem;
+      }
+      .form-actions {
+        display: flex;
+        gap: 1rem;
+        justify-content: flex-end;
+        margin-top: 2rem;
+        padding-top: 1.5rem;
+        border-top: 1px solid var(--panel-border);
+      }
+      .form-actions button {
+        padding: 1rem 2.5rem !important;
+        font-size: 1.1rem !important;
+        font-weight: 600 !important;
+        border-radius: 12px !important;
+        cursor: pointer !important;
+        transition: all 0.3s ease !important;
+        border: none !important;
+        color: white !important;
+        text-decoration: none !important;
+        display: inline-flex !important;
+        align-items: center !important;
+        justify-content: center !important;
+        min-width: 140px !important;
+        position: relative !important;
+        overflow: hidden !important;
+        box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2) !important;
+      }
+      .form-actions button::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: -100%;
+        width: 100%;
+        height: 100%;
+        background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
+        transition: left 0.5s;
+      }
+      .form-actions button:hover::before {
+        left: 100%;
+      }
+      .form-actions button:disabled {
+        opacity: 0.6;
+        cursor: not-allowed;
+        transform: none !important;
+      }
+      .form-actions button:not(:disabled):hover {
+        transform: translateY(-3px) scale(1.02) !important;
+        box-shadow: 0 8px 25px rgba(0, 0, 0, 0.3) !important;
+      }
+      .form-actions button:not(:disabled):active {
+        transform: translateY(-1px) scale(0.98) !important;
+        box-shadow: 0 4px 15px rgba(0, 0, 0, 0.25) !important;
+      }
+      .form-actions .button-secondary,
+      .form-actions #cancel-btn {
+        background: linear-gradient(135deg, var(--btn-secondary-start), var(--btn-secondary-end)) !important;
+        color: white !important;
+      }
+      .form-actions .button-secondary:hover,
+      .form-actions #cancel-btn:hover {
+        background: linear-gradient(135deg, var(--btn-secondary-end), var(--btn-secondary-start)) !important;
+      }
+      .form-actions button[type="submit"] {
+        background: linear-gradient(135deg, var(--btn-start), var(--btn-end)) !important;
+        color: white !important;
+      }
+      .form-actions button[type="submit"]:hover {
+        background: linear-gradient(135deg, var(--btn-end), var(--btn-start)) !important;
+      }
       @media (max-width: 600px) {
         header {
           flex-direction: column;
           gap: 1rem;
           align-items: flex-start;
         }
+        .header-actions {
+          flex-wrap: wrap;
+          width: 100%;
+        }
         .grid {
           grid-template-columns: 1fr;
+        }
+        .modal-content {
+          padding: 1.5rem;
+        }
+        .form-row {
+          grid-template-columns: 1fr;
+        }
+        .form-actions {
+          flex-direction: column-reverse;
+        }
+        .form-actions .button {
+          width: 100%;
+          min-width: auto !important;
         }
       }
     </style>
@@ -263,11 +573,286 @@
             <span class="slider"></span>
           </label>
         </div>
+        <button class="button" id="add-pokemon-btn">+ Add Pokemon</button>
         <a class="button" href="index.html">← Back to Home</a>
       </div>
     </header>
     <p id="status"><span class="loader" aria-hidden="true"></span>Loading Pokédex entries…</p>
     <div id="pokemon-grid" class="grid" hidden></div>
+
+    <!-- Add Pokemon Modal -->
+    <div id="add-pokemon-modal" class="modal" style="display: none;">
+      <div class="modal-content" onclick="event.stopPropagation();">
+        <div class="modal-header">
+          <h2>Add New Pokemon</h2>
+          <button class="modal-close" id="close-modal-btn" type="button" aria-label="Close modal" onclick="window.closeModalNow()">&times;</button>
+        </div>
+        <form id="add-pokemon-form">
+          <div class="form-group">
+            <label for="form-pokemon-name">Pokemon Name *</label>
+            <input type="text" id="form-pokemon-name" name="name" required placeholder="e.g., Rayquaza">
+          </div>
+          <div class="form-row">
+            <div class="form-group">
+              <label for="type1">Type 1 *</label>
+              <select id="type1" name="Type1" required>
+                <option value="">Select Type</option>
+                <option value="Normal">Normal</option>
+                <option value="Fire">Fire</option>
+                <option value="Water">Water</option>
+                <option value="Electric">Electric</option>
+                <option value="Grass">Grass</option>
+                <option value="Ice">Ice</option>
+                <option value="Fighting">Fighting</option>
+                <option value="Poison">Poison</option>
+                <option value="Ground">Ground</option>
+                <option value="Flying">Flying</option>
+                <option value="Psychic">Psychic</option>
+                <option value="Bug">Bug</option>
+                <option value="Rock">Rock</option>
+                <option value="Ghost">Ghost</option>
+                <option value="Dragon">Dragon</option>
+                <option value="Dark">Dark</option>
+                <option value="Steel">Steel</option>
+                <option value="Fairy">Fairy</option>
+              </select>
+            </div>
+            <div class="form-group">
+              <label for="type2">Type 2 (Optional)</label>
+              <select id="type2" name="Type2">
+                <option value="">None</option>
+                <option value="Normal">Normal</option>
+                <option value="Fire">Fire</option>
+                <option value="Water">Water</option>
+                <option value="Electric">Electric</option>
+                <option value="Grass">Grass</option>
+                <option value="Ice">Ice</option>
+                <option value="Fighting">Fighting</option>
+                <option value="Poison">Poison</option>
+                <option value="Ground">Ground</option>
+                <option value="Flying">Flying</option>
+                <option value="Psychic">Psychic</option>
+                <option value="Bug">Bug</option>
+                <option value="Rock">Rock</option>
+                <option value="Ghost">Ghost</option>
+                <option value="Dragon">Dragon</option>
+                <option value="Dark">Dark</option>
+                <option value="Steel">Steel</option>
+                <option value="Fairy">Fairy</option>
+              </select>
+            </div>
+          </div>
+          <div class="form-row">
+            <div class="form-group">
+              <label for="hp">HP *</label>
+              <input type="number" id="hp" name="HP" required min="1" max="999" placeholder="e.g., 105">
+            </div>
+            <div class="form-group">
+              <label for="attack">Attack *</label>
+              <input type="number" id="attack" name="Attack" required min="1" max="999" placeholder="e.g., 150">
+            </div>
+            <div class="form-group">
+              <label for="defense">Defense *</label>
+              <input type="number" id="defense" name="Defense" required min="1" max="999" placeholder="e.g., 90">
+            </div>
+          </div>
+          <div class="form-row">
+            <div class="form-group">
+              <label for="special-attack">Special Attack *</label>
+              <input type="number" id="special-attack" name="Special Attack" required min="1" max="999" placeholder="e.g., 150">
+            </div>
+            <div class="form-group">
+              <label for="special-defense">Special Defense *</label>
+              <input type="number" id="special-defense" name="Special Defense" required min="1" max="999" placeholder="e.g., 90">
+            </div>
+            <div class="form-group">
+              <label for="speed">Speed *</label>
+              <input type="number" id="speed" name="Speed" required min="1" max="999" placeholder="e.g., 95">
+            </div>
+          </div>
+          <div class="form-group">
+            <label>Moves</label>
+            <div class="form-row">
+              <div class="form-group">
+                <input type="text" id="move1" name="move1" placeholder="Move 1 (e.g., Dragon Ascent)">
+              </div>
+              <div class="form-group">
+                <input type="text" id="move2" name="move2" placeholder="Move 2 (e.g., Extreme Speed)">
+              </div>
+            </div>
+            <div class="form-row">
+              <div class="form-group">
+                <input type="text" id="move3" name="move3" placeholder="Move 3 (e.g., Dragon Dance)">
+              </div>
+              <div class="form-group">
+                <input type="text" id="move4" name="move4" placeholder="Move 4 (e.g., Outrage)">
+              </div>
+            </div>
+          </div>
+          <div class="form-row">
+            <div class="form-group">
+              <label for="ability">Ability</label>
+              <input type="text" id="ability" name="ability" placeholder="e.g., Air Lock">
+            </div>
+            <div class="form-group">
+              <label for="item">Item</label>
+              <input type="text" id="item" name="item" placeholder="e.g., Life Orb">
+            </div>
+          </div>
+          <div class="form-actions">
+            <button type="button" class="button button-secondary" id="cancel-btn" onclick="window.closeModalNow()">Cancel</button>
+            <button type="submit" class="button">Add Pokemon</button>
+          </div>
+        </form>
+      </div>
+    </div>
+
+    <!-- Edit Pokemon Modal -->
+    <div id="edit-pokemon-modal" class="modal" style="display: none;">
+      <div class="modal-content" onclick="event.stopPropagation();">
+        <div class="modal-header">
+          <h2>Edit Pokemon</h2>
+          <button class="modal-close" id="close-edit-modal-btn" type="button" aria-label="Close modal" onclick="window.closeEditModalNow()">&times;</button>
+        </div>
+        <form id="edit-pokemon-form">
+          <input type="hidden" id="edit-pokemon-id" name="id">
+          <div class="form-group">
+            <label for="edit-form-pokemon-name">Pokemon Name *</label>
+            <input type="text" id="edit-form-pokemon-name" name="name" required placeholder="e.g., Rayquaza">
+          </div>
+          <div class="form-row">
+            <div class="form-group">
+              <label for="edit-type1">Type 1 *</label>
+              <select id="edit-type1" name="Type1" required>
+                <option value="">Select Type</option>
+                <option value="Normal">Normal</option>
+                <option value="Fire">Fire</option>
+                <option value="Water">Water</option>
+                <option value="Electric">Electric</option>
+                <option value="Grass">Grass</option>
+                <option value="Ice">Ice</option>
+                <option value="Fighting">Fighting</option>
+                <option value="Poison">Poison</option>
+                <option value="Ground">Ground</option>
+                <option value="Flying">Flying</option>
+                <option value="Psychic">Psychic</option>
+                <option value="Bug">Bug</option>
+                <option value="Rock">Rock</option>
+                <option value="Ghost">Ghost</option>
+                <option value="Dragon">Dragon</option>
+                <option value="Dark">Dark</option>
+                <option value="Steel">Steel</option>
+                <option value="Fairy">Fairy</option>
+              </select>
+            </div>
+            <div class="form-group">
+              <label for="edit-type2">Type 2 (Optional)</label>
+              <select id="edit-type2" name="Type2">
+                <option value="">None</option>
+                <option value="Normal">Normal</option>
+                <option value="Fire">Fire</option>
+                <option value="Water">Water</option>
+                <option value="Electric">Electric</option>
+                <option value="Grass">Grass</option>
+                <option value="Ice">Ice</option>
+                <option value="Fighting">Fighting</option>
+                <option value="Poison">Poison</option>
+                <option value="Ground">Ground</option>
+                <option value="Flying">Flying</option>
+                <option value="Psychic">Psychic</option>
+                <option value="Bug">Bug</option>
+                <option value="Rock">Rock</option>
+                <option value="Ghost">Ghost</option>
+                <option value="Dragon">Dragon</option>
+                <option value="Dark">Dark</option>
+                <option value="Steel">Steel</option>
+                <option value="Fairy">Fairy</option>
+              </select>
+            </div>
+          </div>
+          <div class="form-row">
+            <div class="form-group">
+              <label for="edit-hp">HP *</label>
+              <input type="number" id="edit-hp" name="HP" required min="1" max="999" placeholder="e.g., 105">
+            </div>
+            <div class="form-group">
+              <label for="edit-attack">Attack *</label>
+              <input type="number" id="edit-attack" name="Attack" required min="1" max="999" placeholder="e.g., 150">
+            </div>
+            <div class="form-group">
+              <label for="edit-defense">Defense *</label>
+              <input type="number" id="edit-defense" name="Defense" required min="1" max="999" placeholder="e.g., 90">
+            </div>
+          </div>
+          <div class="form-row">
+            <div class="form-group">
+              <label for="edit-special-attack">Special Attack *</label>
+              <input type="number" id="edit-special-attack" name="Special Attack" required min="1" max="999" placeholder="e.g., 150">
+            </div>
+            <div class="form-group">
+              <label for="edit-special-defense">Special Defense *</label>
+              <input type="number" id="edit-special-defense" name="Special Defense" required min="1" max="999" placeholder="e.g., 90">
+            </div>
+            <div class="form-group">
+              <label for="edit-speed">Speed *</label>
+              <input type="number" id="edit-speed" name="Speed" required min="1" max="999" placeholder="e.g., 95">
+            </div>
+          </div>
+          <div class="form-group">
+            <label>Moves</label>
+            <div class="form-row">
+              <div class="form-group">
+                <input type="text" id="edit-move1" name="move1" placeholder="Move 1 (e.g., Dragon Ascent)">
+              </div>
+              <div class="form-group">
+                <input type="text" id="edit-move2" name="move2" placeholder="Move 2 (e.g., Extreme Speed)">
+              </div>
+            </div>
+            <div class="form-row">
+              <div class="form-group">
+                <input type="text" id="edit-move3" name="move3" placeholder="Move 3 (e.g., Dragon Dance)">
+              </div>
+              <div class="form-group">
+                <input type="text" id="edit-move4" name="move4" placeholder="Move 4 (e.g., Outrage)">
+              </div>
+            </div>
+          </div>
+          <div class="form-row">
+            <div class="form-group">
+              <label for="edit-ability">Ability</label>
+              <input type="text" id="edit-ability" name="ability" placeholder="e.g., Air Lock">
+            </div>
+            <div class="form-group">
+              <label for="edit-item">Item</label>
+              <input type="text" id="edit-item" name="item" placeholder="e.g., Life Orb">
+            </div>
+          </div>
+          <div class="form-actions">
+            <button type="button" class="button button-secondary" id="cancel-edit-btn" onclick="window.closeEditModalNow()">Cancel</button>
+            <button type="submit" class="button">Update Pokemon</button>
+          </div>
+        </form>
+      </div>
+    </div>
+
+    <!-- Delete Confirmation Modal -->
+    <div id="delete-confirm-modal" class="modal" style="display: none;">
+      <div class="modal-content" onclick="event.stopPropagation();" style="max-width: 400px;">
+        <div class="modal-header">
+          <h2>Delete Pokemon</h2>
+          <button class="modal-close" id="close-delete-modal-btn" type="button" aria-label="Close modal" onclick="window.closeDeleteModalNow()">&times;</button>
+        </div>
+        <div style="margin-bottom: 1.5rem;">
+          <p style="color: var(--text); margin-bottom: 0.5rem;">Are you sure you want to delete <strong id="delete-pokemon-name"></strong>?</p>
+          <p style="color: var(--subtle); font-size: 0.9rem;">This action cannot be undone.</p>
+        </div>
+        <div class="form-actions">
+          <button type="button" class="button button-secondary" id="cancel-delete-btn" onclick="window.closeDeleteModalNow()">Cancel</button>
+          <button type="button" class="button" id="confirm-delete-btn" style="background: linear-gradient(135deg, #f44336, #d32f2f) !important;">Delete</button>
+        </div>
+      </div>
+    </div>
+
     <template id="pokemon-card-template">
       <article class="card">
         <span class="tag" data-field="type" hidden></span>
@@ -276,6 +861,27 @@
         <img data-field="image" alt="" hidden>
         <div class="meta" data-field="meta" hidden></div>
         <p class="description" data-field="description" hidden></p>
+        <div class="moves-container" data-field="moves" hidden>
+          <p class="subheading" style="margin-bottom: 0.5rem;">Moves:</p>
+          <ul class="moves-list" style="list-style: none; padding: 0; margin: 0;">
+          </ul>
+        </div>
+        <div class="ability-item-container" data-field="ability-item" hidden style="margin-top: 0.75rem; display: flex; flex-direction: column; gap: 0.5rem;">
+          <div data-field="ability" hidden style="font-size: 0.9rem;">
+            <strong style="color: var(--accent-soft);">Ability:</strong> <span data-ability-text></span>
+          </div>
+          <div data-field="item" hidden style="font-size: 0.9rem;">
+            <strong style="color: var(--accent-soft);">Item:</strong> <span data-item-text></span>
+          </div>
+        </div>
+        <table class="stats-table" data-field="stats-table" hidden>
+          <tbody>
+          </tbody>
+        </table>
+        <div class="card-actions" style="margin-top: 1rem; display: flex; gap: 0.5rem;">
+          <button class="button button-secondary" data-action="edit" style="flex: 1; padding: 0.5rem 1rem; font-size: 0.9rem;">Edit</button>
+          <button class="button" data-action="delete" style="flex: 1; padding: 0.5rem 1rem; font-size: 0.9rem; background: linear-gradient(135deg, #f44336, #d32f2f);">Delete</button>
+        </div>
       </article>
     </template>
 
@@ -285,6 +891,11 @@
         getFirestore,
         collection,
         getDocs,
+        addDoc,
+        doc,
+        setDoc,
+        updateDoc,
+        deleteDoc,
         query,
         orderBy
       } from "https://www.gstatic.com/firebasejs/10.14.0/firebase-firestore.js";
@@ -330,20 +941,144 @@
 
   function normalizePokemon(docData, docId) {
     const data = { id: docId, ...docData };
-    const name = data.name ?? data.pokemonName ?? data.title ?? `Pokémon #${data.number ?? ""}`.trim();
-    const type = data.type ?? data.types ?? data.element ?? null;
-    const description = data.description ?? data.summary ?? data.bio ?? null;
-    const number = data.number ?? data.dexNumber ?? data.pokedex ?? null;
+    
+    // More flexible name detection - try multiple field names and also use document ID as fallback
+    let name = 
+      data.name ?? 
+      data.pokemonName ?? 
+      data.title ?? 
+      data.pokemon ?? 
+      data.pokemon_name ??
+      data.Name ??  // Capital N
+      data.Pokemon ??  // Capital P
+      null;
+    
+    // If no name field found, use document ID (which might be the Pokemon name like "rayquaza" or "Rayquaza")
+    if (!name || name.trim() === "" || name === "Pokémon #") {
+      if (docId && docId !== "undefined" && !docId.match(/^[a-f0-9]{20}$/)) {
+        // Use document ID - it might already be capitalized or not
+        name = docId;
+      } else if (data.number) {
+        name = `Pokémon #${data.number}`;
+      } else {
+        name = "Unknown Pokémon";
+      }
+    }
+    
+    // More flexible type detection - handle Type1/Type2 format
+    let type = null;
+    if (data.Type1 || data.Type2) {
+      // Combine Type1 and Type2 if both exist
+      const types = [];
+      if (data.Type1) types.push(data.Type1);
+      if (data.Type2) types.push(data.Type2);
+      type = types.join(" / ");
+    } else {
+      // Try other common field names
+      type = 
+        data.type ?? 
+        data.types ?? 
+        data.element ?? 
+        data.Type ?? 
+        data.Types ?? 
+        data.Element ?? 
+        null;
+    }
+    
+    // More flexible description detection
+    const description = 
+      data.description ?? 
+      data.summary ?? 
+      data.bio ?? 
+      data.Description ?? 
+      data.Summary ?? 
+      null;
+    
+    // More flexible number detection
+    const number = 
+      data.number ?? 
+      data.dexNumber ?? 
+      data.pokedex ?? 
+      data.Number ?? 
+      data.DexNumber ?? 
+      data.Pokedex ?? 
+      null;
+    
+    // More flexible image detection
     const sprite =
       data.image ??
       data.imageUrl ??
       data.sprite ??
       data.photo ??
-      (Array.isArray(data.images) ? data.images[0] : null);
-    const abilities = data.abilities ?? data.moves ?? null;
-    const region = data.region ?? data.origin ?? null;
+      data.Image ??
+      data.ImageUrl ??
+      data.Sprite ??
+      data.Photo ??
+      data.url ??  // Sometimes just "url"
+      data.URL ??
+      (Array.isArray(data.images) ? data.images[0] : null) ??
+      (Array.isArray(data.Images) ? data.Images[0] : null);
+    
+    // More flexible abilities detection
+    const abilities = 
+      data.abilities ?? 
+      data.Abilities ?? 
+      null;
+    
+    // Ability detection (single ability field)
+    const ability = 
+      data.ability ?? 
+      data.Ability ?? 
+      null;
+    
+    // Item detection
+    const item = 
+      data.item ?? 
+      data.Item ?? 
+      null;
+    
+    // Moves detection - handle both array and individual move fields
+    let moves = null;
+    if (data.moves && Array.isArray(data.moves)) {
+      moves = data.moves;
+    } else if (data.Moves && Array.isArray(data.Moves)) {
+      moves = data.Moves;
+    } else if (data.move1 || data.move2 || data.move3 || data.move4) {
+      // Handle individual move fields
+      moves = [
+        data.move1 || data.Move1 || null,
+        data.move2 || data.Move2 || null,
+        data.move3 || data.Move3 || null,
+        data.move4 || data.Move4 || null
+      ].filter(m => m && m.trim() !== "");
+    }
+    
+    // More flexible region detection
+    const region = 
+      data.region ?? 
+      data.origin ?? 
+      data.Region ?? 
+      data.Origin ?? 
+      null;
+    
+    // Stats detection (HP, Attack, Defense, etc.) - check both with and without spaces
+    const stats = {};
+    if (data.HP !== undefined) stats.HP = data.HP;
+    if (data.Attack !== undefined) stats.Attack = data.Attack;
+    if (data.Defense !== undefined) stats.Defense = data.Defense;
+    if (data["Special Attack"] !== undefined) {
+      stats["Special Attack"] = data["Special Attack"];
+    } else if (data.SpecialAttack !== undefined) {
+      stats["Special Attack"] = data.SpecialAttack;
+    }
+    if (data["Special Defense"] !== undefined) {
+      stats["Special Defense"] = data["Special Defense"];
+    } else if (data.SpecialDefense !== undefined) {
+      stats["Special Defense"] = data.SpecialDefense;
+    }
+    if (data.Speed !== undefined) stats.Speed = data.Speed;
 
-    return { name, type, description, number, sprite, abilities, region };
+    return { name, type, description, number, sprite, abilities, ability, item, region, stats, moves, id: docId };
   }
 
   function hydrateCard(pokemon) {
@@ -356,7 +1091,14 @@
     const imageEl = card.querySelector('[data-field="image"]');
     const metaEl = card.querySelector('[data-field="meta"]');
 
-    nameEl.textContent = pokemon.name ?? "Unknown Pokémon";
+    // Ensure name is always displayed and meaningful
+    const displayName = pokemon.name && pokemon.name.trim() && !pokemon.name.includes("Pokémon #") && pokemon.name !== "Pokémon #"
+      ? pokemon.name 
+      : pokemon.number 
+        ? `Pokémon #${pokemon.number}`
+        : "Unknown Pokémon";
+    nameEl.textContent = displayName;
+    nameEl.hidden = false; // Always show the name
 
     if (pokemon.type) {
       const typeText = Array.isArray(pokemon.type) ? pokemon.type.join(" / ") : pokemon.type;
@@ -394,10 +1136,107 @@
       });
     }
 
+    // Add stats table if available
+    const statsTableEl = card.querySelector('[data-field="stats-table"]');
+    const statsTableBody = statsTableEl?.querySelector('tbody');
+    if (pokemon.stats && Object.keys(pokemon.stats).length > 0 && statsTableBody) {
+      // Clear any existing rows
+      statsTableBody.innerHTML = "";
+      
+      // Define stat display order
+      const statOrder = ['HP', 'Attack', 'Defense', 'Special Attack', 'Special Defense', 'Speed'];
+      
+      // Add stats in order
+      statOrder.forEach(statName => {
+        if (pokemon.stats[statName] !== undefined) {
+          const row = document.createElement('tr');
+          const nameCell = document.createElement('td');
+          nameCell.textContent = statName;
+          const valueCell = document.createElement('td');
+          valueCell.textContent = pokemon.stats[statName];
+          row.appendChild(nameCell);
+          row.appendChild(valueCell);
+          statsTableBody.appendChild(row);
+        }
+      });
+      
+      // If there are any remaining stats not in the order, add them
+      Object.entries(pokemon.stats).forEach(([statName, statValue]) => {
+        if (!statOrder.includes(statName)) {
+          const row = document.createElement('tr');
+          const nameCell = document.createElement('td');
+          nameCell.textContent = statName;
+          const valueCell = document.createElement('td');
+          valueCell.textContent = statValue;
+          row.appendChild(nameCell);
+          row.appendChild(valueCell);
+          statsTableBody.appendChild(row);
+        }
+      });
+      
+      if (statsTableBody.children.length > 0) {
+        statsTableEl.hidden = false;
+      }
+    }
+
     if (pokemon.sprite) {
       imageEl.src = pokemon.sprite;
       imageEl.alt = `${pokemon.name ?? "Pokémon"} artwork`;
       imageEl.hidden = false;
+    }
+
+    // Display moves
+    const movesContainer = card.querySelector('[data-field="moves"]');
+    const movesList = movesContainer?.querySelector('.moves-list');
+    if (pokemon.moves && pokemon.moves.length > 0 && movesList) {
+      movesList.innerHTML = "";
+      pokemon.moves.forEach(move => {
+        if (move && move.trim() !== "") {
+          const li = document.createElement('li');
+          li.textContent = move;
+          movesList.appendChild(li);
+        }
+      });
+      if (movesList.children.length > 0) {
+        movesContainer.hidden = false;
+      }
+    }
+
+    // Display ability and item
+    const abilityItemContainer = card.querySelector('[data-field="ability-item"]');
+    const abilityEl = card.querySelector('[data-field="ability"]');
+    const abilityTextEl = card.querySelector('[data-ability-text]');
+    const itemEl = card.querySelector('[data-field="item"]');
+    const itemTextEl = card.querySelector('[data-item-text]');
+    
+    let hasAbilityOrItem = false;
+    
+    if (pokemon.ability && abilityEl && abilityTextEl) {
+      abilityTextEl.textContent = pokemon.ability;
+      abilityEl.hidden = false;
+      hasAbilityOrItem = true;
+    }
+    
+    if (pokemon.item && itemEl && itemTextEl) {
+      itemTextEl.textContent = pokemon.item;
+      itemEl.hidden = false;
+      hasAbilityOrItem = true;
+    }
+    
+    if (hasAbilityOrItem && abilityItemContainer) {
+      abilityItemContainer.hidden = false;
+    }
+
+    // Add edit button functionality
+    const editBtn = card.querySelector('[data-action="edit"]');
+    if (editBtn && pokemon.id) {
+      editBtn.onclick = () => openEditModal(pokemon);
+    }
+
+    // Add delete button functionality
+    const deleteBtn = card.querySelector('[data-action="delete"]');
+    if (deleteBtn && pokemon.id) {
+      deleteBtn.onclick = () => openDeleteModal(pokemon);
     }
 
     return card;
@@ -405,35 +1244,533 @@
 
       async function loadPokemon() {
         try {
-          const pokemonQuery = query(collection(db, "pokemon"), orderBy("name"));
-          const snapshot = await getDocs(pokemonQuery);
+          console.log("=== Starting Pokémon Load ===");
+          console.log("Firestore database:", db);
+          console.log("Firebase config:", firebaseConfig);
+          
+          // Try different collection name variations
+          const collectionNames = ["Pokemon", "pokemon", "Pokémon"];
+          let snapshot = null;
+          let usedCollectionName = null;
+          let lastError = null;
+          
+          for (const collName of collectionNames) {
+            try {
+              console.log(`\n--- Trying collection name: "${collName}" ---`);
+              const collRef = collection(db, collName);
+              console.log("Collection reference created:", collRef);
+              
+              // Try without orderBy first to avoid any index issues
+              try {
+                console.log(`Attempting to fetch all documents from "${collName}"...`);
+                snapshot = await getDocs(collRef);
+                console.log(`✓ Successfully fetched from "${collName}"`);
+                console.log(`✓ Snapshot size: ${snapshot.size}`);
+                console.log(`✓ Snapshot empty: ${snapshot.empty}`);
+                
+                if (snapshot.size > 0) {
+                  console.log(`✓ Found ${snapshot.size} documents!`);
+                  usedCollectionName = collName;
+                  break;
+                } else {
+                  console.warn(`⚠ Collection "${collName}" exists but is empty (0 documents)`);
+                  usedCollectionName = collName;
+                  // Continue to next variation to see if another has data
+                }
+              } catch (fetchError) {
+                console.error(`✗ Error fetching from "${collName}":`, fetchError);
+                console.error("Error code:", fetchError.code);
+                console.error("Error message:", fetchError.message);
+                lastError = fetchError;
+                continue;
+              }
+            } catch (error) {
+              console.error(`✗ Failed to access collection "${collName}":`, error);
+              lastError = error;
+              continue;
+            }
+          }
 
-          if (snapshot.empty) {
-        setStatus("You haven’t added any Pokémon yet.");
-        statusEl.classList.add("empty-state");
+          if (!snapshot) {
+            console.error("=== FAILED TO ACCESS ANY COLLECTION ===");
+            const errorMsg = lastError 
+              ? `Error: ${lastError.code || 'unknown'} - ${lastError.message}`
+              : "Could not access Pokemon collection. Check collection name and Firestore rules.";
+            setStatus(errorMsg, "error");
+            console.error("Last error:", lastError);
             return;
           }
 
+          console.log(`\n=== Using collection: "${usedCollectionName}" ===`);
+          console.log(`Total documents in snapshot: ${snapshot.size}`);
+
+          if (snapshot.empty) {
+            console.warn("⚠ Snapshot is empty - no documents found");
+            setStatus(`Collection "${usedCollectionName}" exists but contains 0 documents. Verify your documents are in the correct collection in Firestore.`, "error");
+            statusEl.classList.add("empty-state");
+            return;
+          }
+
+          console.log(`\n=== Processing ${snapshot.size} documents ===`);
           const fragment = document.createDocumentFragment();
+          let cardCount = 0;
+          
           snapshot.forEach((doc) => {
-        const pokemon = normalizePokemon(doc.data(), doc.id);
-        fragment.appendChild(hydrateCard(pokemon));
+            console.log(`\n--- Document ${cardCount + 1} ---`);
+            console.log("Document ID:", doc.id);
+            console.log("Document data:", doc.data());
+            console.log("Raw document:", doc);
+            
+            const rawData = doc.data();
+            console.log("Fields in document:", Object.keys(rawData));
+            
+            const pokemon = normalizePokemon(rawData, doc.id);
+            console.log("Normalized Pokémon:", pokemon);
+            
+            fragment.appendChild(hydrateCard(pokemon));
+            cardCount++;
           });
 
+          console.log(`Successfully processed ${cardCount} Pokémon`);
           gridEl.appendChild(fragment);
           gridEl.hidden = false;
-      setStatus(`Showing ${snapshot.size} Pokémon`, "success");
+          setStatus(`Showing ${snapshot.size} Pokémon`, "success");
         } catch (error) {
           console.error("Error loading Pokémon collection:", error);
-      const helpfulMessage =
-        error.code === "permission-denied"
-          ? "Read permission denied. Update your Firestore rules to allow reads or sign in."
-          : "Failed to load Pokémon. Check the browser console for details.";
-      setStatus(helpfulMessage, "error");
+          console.error("Error details:", {
+            code: error.code,
+            message: error.message,
+            stack: error.stack
+          });
+          
+          const helpfulMessage =
+            error.code === "permission-denied"
+              ? "Read permission denied. Update your Firestore rules to allow reads or sign in."
+              : error.code === "failed-precondition"
+              ? "Firestore index required. Check the console for a link to create it, or try refreshing."
+              : `Failed to load Pokémon: ${error.message}. Check the browser console (F12) for details.`;
+          setStatus(helpfulMessage, "error");
         }
       }
 
       loadPokemon();
+
+      // Modal functionality - Make functions global so inline handlers work
+      const modal = document.getElementById("add-pokemon-modal");
+      const editModal = document.getElementById("edit-pokemon-modal");
+      const deleteModal = document.getElementById("delete-confirm-modal");
+      const addPokemonBtn = document.getElementById("add-pokemon-btn");
+      const cancelBtn = document.getElementById("cancel-btn");
+      const addPokemonForm = document.getElementById("add-pokemon-form");
+      const editPokemonForm = document.getElementById("edit-pokemon-form");
+      const confirmDeleteBtn = document.getElementById("confirm-delete-btn");
+
+      function openModal() {
+        if (modal) {
+          modal.style.display = "flex";
+          modal.hidden = false;
+          document.body.style.overflow = 'hidden';
+          console.log("✅ Modal opened - display:", modal.style.display);
+        } else {
+          console.error("❌ Modal element not found!");
+        }
+      }
+
+      function closeModal() {
+        if (modal) {
+          modal.style.display = "none";
+          modal.hidden = true;
+          document.body.style.overflow = '';
+          if (addPokemonForm) {
+            addPokemonForm.reset();
+          }
+          console.log("✅ Modal closed");
+        }
+      }
+
+      // Edit modal functions
+      function openEditModal(pokemon) {
+        if (editModal && pokemon) {
+          // Populate form with pokemon data
+          document.getElementById("edit-pokemon-id").value = pokemon.id;
+          document.getElementById("edit-form-pokemon-name").value = pokemon.name || "";
+          
+          // Handle types
+          if (pokemon.type) {
+            const types = pokemon.type.split(" / ");
+            document.getElementById("edit-type1").value = types[0] || "";
+            document.getElementById("edit-type2").value = types[1] || "";
+          }
+          
+          // Handle stats
+          if (pokemon.stats) {
+            document.getElementById("edit-hp").value = pokemon.stats.HP || "";
+            document.getElementById("edit-attack").value = pokemon.stats.Attack || "";
+            document.getElementById("edit-defense").value = pokemon.stats.Defense || "";
+            document.getElementById("edit-special-attack").value = pokemon.stats["Special Attack"] || "";
+            document.getElementById("edit-special-defense").value = pokemon.stats["Special Defense"] || "";
+            document.getElementById("edit-speed").value = pokemon.stats.Speed || "";
+          }
+          
+          // Handle moves
+          if (pokemon.moves && Array.isArray(pokemon.moves)) {
+            document.getElementById("edit-move1").value = pokemon.moves[0] || "";
+            document.getElementById("edit-move2").value = pokemon.moves[1] || "";
+            document.getElementById("edit-move3").value = pokemon.moves[2] || "";
+            document.getElementById("edit-move4").value = pokemon.moves[3] || "";
+          } else {
+            document.getElementById("edit-move1").value = "";
+            document.getElementById("edit-move2").value = "";
+            document.getElementById("edit-move3").value = "";
+            document.getElementById("edit-move4").value = "";
+          }
+          
+          // Handle ability and item
+          document.getElementById("edit-ability").value = pokemon.ability || "";
+          document.getElementById("edit-item").value = pokemon.item || "";
+          
+          editModal.style.display = "flex";
+          editModal.hidden = false;
+          document.body.style.overflow = 'hidden';
+          console.log("✅ Edit modal opened");
+        }
+      }
+
+      function closeEditModal() {
+        if (editModal) {
+          editModal.style.display = "none";
+          editModal.hidden = true;
+          document.body.style.overflow = '';
+          if (editPokemonForm) {
+            editPokemonForm.reset();
+          }
+          console.log("✅ Edit modal closed");
+        }
+      }
+
+      // Delete modal functions
+      let pokemonToDelete = null;
+
+      function openDeleteModal(pokemon) {
+        if (deleteModal && pokemon) {
+          pokemonToDelete = pokemon;
+          document.getElementById("delete-pokemon-name").textContent = pokemon.name || "this Pokemon";
+          deleteModal.style.display = "flex";
+          deleteModal.hidden = false;
+          document.body.style.overflow = 'hidden';
+          console.log("✅ Delete modal opened for:", pokemon.name);
+        }
+      }
+
+      function closeDeleteModal() {
+        if (deleteModal) {
+          deleteModal.style.display = "none";
+          deleteModal.hidden = true;
+          document.body.style.overflow = '';
+          pokemonToDelete = null;
+          console.log("✅ Delete modal closed");
+        }
+      }
+
+      // Make closeModal globally accessible for inline onclick
+      window.closeModalNow = closeModal;
+      window.openModalNow = openModal;
+      window.closeEditModalNow = closeEditModal;
+      window.openEditModalNow = openEditModal;
+      window.closeDeleteModalNow = closeDeleteModal;
+      window.openDeleteModalNow = openDeleteModal;
+
+      // Open modal button
+      if (addPokemonBtn) {
+        addPokemonBtn.onclick = function(e) {
+          e.preventDefault();
+          e.stopPropagation();
+          openModal();
+        };
+        console.log("✅ Add Pokemon button handler attached");
+      } else {
+        console.error("❌ Add Pokemon button not found!");
+      }
+
+      // Close modal when clicking outside (on the backdrop)
+      if (modal) {
+        modal.onclick = function(e) {
+          if (e.target === modal) {
+            closeModal();
+            console.log("✅ Backdrop clicked - closing modal");
+          }
+        };
+        console.log("✅ Modal backdrop handler attached");
+      }
+
+      if (editModal) {
+        editModal.onclick = function(e) {
+          if (e.target === editModal) {
+            closeEditModal();
+            console.log("✅ Edit modal backdrop clicked - closing modal");
+          }
+        };
+        console.log("✅ Edit modal backdrop handler attached");
+      }
+
+      if (deleteModal) {
+        deleteModal.onclick = function(e) {
+          if (e.target === deleteModal) {
+            closeDeleteModal();
+            console.log("✅ Delete modal backdrop clicked - closing modal");
+          }
+        };
+        console.log("✅ Delete modal backdrop handler attached");
+      }
+
+      // Close modal on Escape key
+      document.addEventListener("keydown", function(e) {
+        if (e.key === "Escape") {
+          if (deleteModal && deleteModal.style.display !== "none") {
+            closeDeleteModal();
+            console.log("✅ Escape key pressed - closing delete modal");
+          } else if (editModal && editModal.style.display !== "none") {
+            closeEditModal();
+            console.log("✅ Escape key pressed - closing edit modal");
+          } else if (modal && modal.style.display !== "none") {
+            closeModal();
+            console.log("✅ Escape key pressed - closing modal");
+          }
+        }
+      });
+
+        // Handle form submission
+        if (addPokemonForm) {
+          addPokemonForm.addEventListener("submit", async (e) => {
+            e.preventDefault();
+            
+            const submitButton = addPokemonForm.querySelector('button[type="submit"]');
+            const originalText = submitButton.textContent;
+            submitButton.disabled = true;
+            submitButton.textContent = "Adding...";
+
+            try {
+              const formData = new FormData(addPokemonForm);
+              const pokemonData = {};
+
+              // Collect all form fields
+              for (const [key, value] of formData.entries()) {
+                if (value !== "" && value !== null) {
+                  // Convert numeric fields to numbers
+                  if (key === "HP" || key === "Attack" || key === "Defense" || 
+                      key === "Special Attack" || key === "Special Defense" || key === "Speed") {
+                    pokemonData[key] = parseInt(value, 10);
+                  } else {
+                    pokemonData[key] = value;
+                  }
+                }
+              }
+
+              // Collect moves into an array
+              const moves = [
+                formData.get("move1")?.trim() || null,
+                formData.get("move2")?.trim() || null,
+                formData.get("move3")?.trim() || null,
+                formData.get("move4")?.trim() || null
+              ].filter(m => m && m !== "");
+              
+              if (moves.length > 0) {
+                pokemonData.moves = moves;
+              }
+
+              // Collect ability and item
+              const ability = formData.get("ability")?.trim();
+              if (ability) {
+                pokemonData.ability = ability;
+              }
+              
+              const item = formData.get("item")?.trim();
+              if (item) {
+                pokemonData.item = item;
+              }
+
+              // Use the Pokemon name as the document ID (capitalized first letter)
+              const pokemonName = formData.get("name").trim();
+              const docId = pokemonName.charAt(0).toUpperCase() + pokemonName.slice(1).toLowerCase();
+
+              console.log("Adding Pokemon:", pokemonData);
+              console.log("Document ID:", docId);
+
+              // Save to Firestore using setDoc with the Pokemon name as the document ID
+              const pokemonRef = doc(db, "Pokemon", docId);
+              await setDoc(pokemonRef, pokemonData);
+
+              console.log("✓ Pokemon added successfully!");
+
+              // Close modal and refresh the list
+              window.closeModalNow();
+              setStatus("Pokemon added successfully! Refreshing...", "success");
+              
+              // Clear the grid and reload
+              gridEl.innerHTML = "";
+              gridEl.hidden = true;
+              await loadPokemon();
+
+            } catch (error) {
+              console.error("Error adding Pokemon:", error);
+              setStatus(
+                `Failed to add Pokemon: ${error.message}. Check the console for details.`,
+                "error"
+              );
+              submitButton.disabled = false;
+              submitButton.textContent = originalText;
+            }
+          });
+        }
+
+        // Handle edit form submission
+        if (editPokemonForm) {
+          editPokemonForm.addEventListener("submit", async (e) => {
+            e.preventDefault();
+            
+            const submitButton = editPokemonForm.querySelector('button[type="submit"]');
+            const originalText = submitButton.textContent;
+            submitButton.disabled = true;
+            submitButton.textContent = "Updating...";
+
+            try {
+              const formData = new FormData(editPokemonForm);
+              const pokemonId = formData.get("id");
+              
+              if (!pokemonId) {
+                throw new Error("Pokemon ID is missing. Cannot update.");
+              }
+              
+              const pokemonData = {};
+
+              // Collect all form fields
+              for (const [key, value] of formData.entries()) {
+                if (key !== "id" && value !== "" && value !== null) {
+                  // Convert numeric fields to numbers
+                  if (key === "HP" || key === "Attack" || key === "Defense" || 
+                      key === "Special Attack" || key === "Special Defense" || key === "Speed") {
+                    pokemonData[key] = parseInt(value, 10);
+                  } else {
+                    pokemonData[key] = value;
+                  }
+                }
+              }
+
+              // Collect moves into an array
+              const moves = [
+                formData.get("move1")?.trim() || null,
+                formData.get("move2")?.trim() || null,
+                formData.get("move3")?.trim() || null,
+                formData.get("move4")?.trim() || null
+              ].filter(m => m && m !== "");
+              
+              if (moves.length > 0) {
+                pokemonData.moves = moves;
+              }
+
+              // Collect ability and item
+              const ability = formData.get("ability")?.trim();
+              if (ability) {
+                pokemonData.ability = ability;
+              } else {
+                // If ability field is empty, remove it from the document
+                pokemonData.ability = null;
+              }
+              
+              const item = formData.get("item")?.trim();
+              if (item) {
+                pokemonData.item = item;
+              } else {
+                // If item field is empty, remove it from the document
+                pokemonData.item = null;
+              }
+
+              console.log("Updating Pokemon:", pokemonId, pokemonData);
+
+              // Update Firestore document
+              const pokemonRef = doc(db, "Pokemon", pokemonId);
+              await updateDoc(pokemonRef, pokemonData);
+
+              console.log("✓ Pokemon updated successfully!");
+
+              // Re-enable button before closing modal
+              submitButton.disabled = false;
+              submitButton.textContent = originalText;
+
+              // Close modal and refresh the list
+              window.closeEditModalNow();
+              setStatus("Pokemon updated successfully! Refreshing...", "success");
+              
+              // Clear the grid and reload
+              gridEl.innerHTML = "";
+              gridEl.hidden = true;
+              
+              try {
+                await loadPokemon();
+              } catch (loadError) {
+                console.error("Error reloading Pokemon list:", loadError);
+                setStatus("Pokemon updated, but failed to refresh list. Please refresh the page.", "error");
+              }
+
+            } catch (error) {
+              console.error("Error updating Pokemon:", error);
+              setStatus(
+                `Failed to update Pokemon: ${error.message}. Check the console for details.`,
+                "error"
+              );
+              submitButton.disabled = false;
+              submitButton.textContent = originalText;
+            }
+          });
+        }
+
+        // Handle delete confirmation
+        if (confirmDeleteBtn) {
+          confirmDeleteBtn.addEventListener("click", async () => {
+            if (!pokemonToDelete || !pokemonToDelete.id) {
+              console.error("No Pokemon selected for deletion");
+              return;
+            }
+
+            const originalText = confirmDeleteBtn.textContent;
+            confirmDeleteBtn.disabled = true;
+            confirmDeleteBtn.textContent = "Deleting...";
+
+            try {
+              console.log("Deleting Pokemon:", pokemonToDelete.id, pokemonToDelete.name);
+
+              // Delete from Firestore
+              const pokemonRef = doc(db, "Pokemon", pokemonToDelete.id);
+              await deleteDoc(pokemonRef);
+
+              console.log("✓ Pokemon deleted successfully!");
+
+              // Close modal
+              closeDeleteModal();
+              setStatus("Pokemon deleted successfully! Refreshing...", "success");
+
+              // Clear the grid and reload
+              gridEl.innerHTML = "";
+              gridEl.hidden = true;
+
+              try {
+                await loadPokemon();
+              } catch (loadError) {
+                console.error("Error reloading Pokemon list:", loadError);
+                setStatus("Pokemon deleted, but failed to refresh list. Please refresh the page.", "error");
+              }
+
+            } catch (error) {
+              console.error("Error deleting Pokemon:", error);
+              setStatus(
+                `Failed to delete Pokemon: ${error.message}. Check the console for details.`,
+                "error"
+              );
+              confirmDeleteBtn.disabled = false;
+              confirmDeleteBtn.textContent = originalText;
+            }
+          });
+        }
     </script>
   </body>
 </html>
