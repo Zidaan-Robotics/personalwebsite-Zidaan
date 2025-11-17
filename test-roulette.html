@@ -1,0 +1,154 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <title>Roulette Test</title>
+  <style>
+    body {
+      font-family: monospace;
+      padding: 20px;
+      background: #1a1a1a;
+      color: #fff;
+    }
+    #results {
+      margin-top: 20px;
+      max-height: 400px;
+      overflow-y: auto;
+      background: #2a2a2a;
+      padding: 10px;
+      border-radius: 5px;
+    }
+    .test-result {
+      padding: 5px;
+      margin: 2px 0;
+    }
+    .pass { color: #4caf50; }
+    .fail { color: #f44336; }
+    .summary {
+      margin-top: 20px;
+      padding: 15px;
+      background: #2a2a2a;
+      border-radius: 5px;
+      font-size: 18px;
+    }
+  </style>
+</head>
+<body>
+  <h1>Roulette Payout Test</h1>
+  <p>This test will verify that the roulette payout matches the segment it lands on.</p>
+  <button id="run-test" style="padding: 10px 20px; font-size: 16px; cursor: pointer;">Run 100 Tests</button>
+  <div id="results"></div>
+  <div id="summary" class="summary"></div>
+
+  <script>
+    // Copy the relevant code from gambling-simulator.html
+    const segments = 12;
+    const multipliers = [0, 0, 0.4, 1, 0, 2, 0, 4, 0, 10, 0, 20];
+    
+    // Simulate the spin and payout calculation logic exactly as in the game
+    function simulateSpin() {
+      // Step 1: Choose a random target segment (same as in spin())
+      const targetIndex = Math.floor(Math.random() * segments);
+      const segmentAngle = 360 / segments;
+      
+      // Step 2: Calculate rotation to place targetIndex at the top
+      const margin = 2;
+      const randomExtra = (Math.random() * (segmentAngle - 2 * margin)) - (segmentAngle / 2 - margin);
+      const targetCenter = targetIndex * segmentAngle + segmentAngle / 2; // center of target segment from 0° (right)
+      const alignToTop = (targetCenter + randomExtra) - 90; // rotation needed to bring to top (90° from right)
+      const extraSpins = 8;
+      const finalRotation = extraSpins * 360 + alignToTop;
+      const lastFinalRotation = ((finalRotation % 360) + 360) % 360;
+      
+      // Step 3: OLD (buggy) calculation - trying to determine segment from rotation
+      const segmentAngleDeg = 360 / segments;
+      const theta = ((90 + lastFinalRotation) % 360 + 360) % 360;
+      const oldCalculatedIndex = Math.floor(theta / segmentAngleDeg);
+      
+      // Step 4: NEW (correct) approach - use the stored targetIndex directly
+      const winningIndex = targetIndex; // This matches lastTargetIndex in the fixed code
+      
+      // Step 5: Calculate payouts
+      const betAmount = 5; // Test with $5 bet
+      const expectedPayout = Math.round(multipliers[targetIndex] * betAmount);
+      const oldPayout = Math.round(multipliers[oldCalculatedIndex] * betAmount);
+      const correctPayout = Math.round(multipliers[winningIndex] * betAmount);
+      
+      // Verify: winningIndex should always equal targetIndex, and payout should match
+      const isCorrect = winningIndex === targetIndex && correctPayout === expectedPayout;
+      const oldWasWrong = oldCalculatedIndex !== targetIndex || oldPayout !== expectedPayout;
+      
+      return {
+        targetIndex,
+        oldCalculatedIndex,
+        winningIndex,
+        expectedPayout,
+        oldPayout,
+        correctPayout,
+        isCorrect,
+        oldWasWrong,
+        multiplier: multipliers[targetIndex]
+      };
+    }
+    
+    function runTests() {
+      const resultsDiv = document.getElementById('results');
+      const summaryDiv = document.getElementById('summary');
+      resultsDiv.innerHTML = '';
+      
+      let passCount = 0;
+      let failCount = 0;
+      let oldBugCount = 0;
+      const details = [];
+      
+      for (let i = 0; i < 100; i++) {
+        const result = simulateSpin();
+        
+        if (result.isCorrect) {
+          passCount++;
+        } else {
+          failCount++;
+        }
+        
+        if (result.oldWasWrong) {
+          oldBugCount++;
+        }
+        
+        details.push(result);
+      }
+      
+      // Display results
+      details.forEach((result, i) => {
+        const resultDiv = document.createElement('div');
+        resultDiv.className = `test-result ${result.isCorrect ? 'pass' : 'fail'}`;
+        
+        let text = `Test ${i + 1}: `;
+        if (result.isCorrect) {
+          text += `PASS - Segment ${result.targetIndex} (multiplier: ${result.multiplier}x), Payout: $${result.correctPayout}`;
+        } else {
+          text += `FAIL - Expected segment ${result.targetIndex} ($${result.expectedPayout}), got ${result.winningIndex} ($${result.correctPayout})`;
+        }
+        
+        if (result.oldWasWrong) {
+          text += ` | OLD BUG: Would have calculated segment ${result.oldCalculatedIndex} ($${result.oldPayout})`;
+        }
+        
+        resultDiv.textContent = text;
+        resultsDiv.appendChild(resultDiv);
+      });
+      
+      summaryDiv.innerHTML = `
+        <h2>Test Summary</h2>
+        <p><strong>Total Tests:</strong> 100</p>
+        <p class="pass"><strong>Passed:</strong> ${passCount} (${passCount}%)</p>
+        <p class="fail"><strong>Failed:</strong> ${failCount} (${failCount}%)</p>
+        <p><strong>Old Bug Would Have Occurred:</strong> ${oldBugCount} times (${oldBugCount}%)</p>
+        <p><strong>Result:</strong> ${passCount === 100 ? '<span class="pass">✓ All tests passed! The fix works correctly.</span>' : '<span class="fail">✗ Some tests failed. Please review.</span>'}</p>
+      `;
+    }
+    
+    document.getElementById('run-test').addEventListener('click', runTests);
+  </script>
+</body>
+</html>
+

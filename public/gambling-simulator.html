@@ -149,6 +149,35 @@
       .bj-controls { display: flex; gap: 10px; margin-top: 8px; }
       .bj-controls button { background: linear-gradient(135deg, var(--btn-start), var(--btn-end)); color: #fff; border: none; padding: 10px 14px; border-radius: 8px; cursor: pointer; }
       .bj-status { min-height: 20px; color: var(--subtle); margin-top: 8px; }
+      /* Leaderboard styles */
+      #leaderboard-modal { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.5); z-index: 1000; align-items: center; justify-content: center; }
+      #leaderboard-modal.active { display: flex; }
+      .leaderboard-container { background: var(--panel-bg); border: 1px solid var(--panel-border); border-radius: 12px; padding: 24px; max-width: 600px; width: 90%; max-height: 80vh; overflow-y: auto; box-shadow: 0 8px 32px rgba(0,0,0,0.2); }
+      .leaderboard-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px; }
+      .leaderboard-header h2 { margin: 0; color: var(--accent); }
+      .leaderboard-close { background: transparent; border: 1px solid var(--panel-border); color: var(--text); padding: 8px 16px; border-radius: 8px; cursor: pointer; font-size: 14px; }
+      .leaderboard-list { display: flex; flex-direction: column; gap: 8px; }
+      .leaderboard-item { display: flex; justify-content: space-between; align-items: center; padding: 12px; background: rgba(0,0,0,.03); border: 1px solid var(--panel-border); border-radius: 8px; }
+      body.dark .leaderboard-item { background: rgba(255,255,255,.05); }
+      .leaderboard-rank { font-weight: 700; color: var(--accent); min-width: 30px; }
+      .leaderboard-name { flex: 1; margin: 0 16px; font-weight: 500; }
+      .leaderboard-amount { font-weight: 700; color: var(--win); }
+      .leaderboard-item.you { background: rgba(25,118,210,.1); border-color: var(--btn-start); }
+      body.dark .leaderboard-item.you { background: rgba(129,140,248,.2); }
+      /* Username modal styles */
+      #username-modal { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.7); z-index: 2000; align-items: center; justify-content: center; }
+      #username-modal.active { display: flex; }
+      .username-container { background: var(--panel-bg); border: 1px solid var(--panel-border); border-radius: 12px; padding: 32px; max-width: 400px; width: 90%; box-shadow: 0 8px 32px rgba(0,0,0,0.3); }
+      .username-container h2 { margin: 0 0 16px; color: var(--accent); }
+      .username-container p { margin: 0 0 24px; color: var(--subtle); font-size: 14px; }
+      .username-input-group { display: flex; flex-direction: column; gap: 12px; }
+      .username-input-group input { padding: 12px; border: 1px solid var(--panel-border); border-radius: 8px; background: var(--panel-bg); color: var(--text); font-size: 16px; }
+      .username-input-group button { background: linear-gradient(135deg, var(--btn-start), var(--btn-end)); color: #fff; border: none; padding: 12px 24px; border-radius: 8px; cursor: pointer; font-size: 16px; font-weight: 600; }
+      .username-input-group button:disabled { opacity: 0.6; cursor: not-allowed; }
+      @media (max-width: 600px) {
+        .app-header { flex-wrap: wrap; gap: 8px; }
+        .app-header > div:last-child { flex-wrap: wrap; }
+      }
     </style>
   </head>
   <body>
@@ -156,6 +185,7 @@
     <div class="app-header">
       <div class="brand">Gambling Simulator</div>
       <div style="display: flex; align-items: center; gap: 16px;">
+        <button id="show-leaderboard-btn" style="background: transparent; border: 1px solid var(--panel-border); color: var(--text); padding: 8px 16px; border-radius: 8px; cursor: pointer; font-size: 14px; transition: all 0.2s;">Leaderboard</button>
         <a href="index.html" style="background: transparent; border: 1px solid var(--panel-border); color: var(--text); padding: 8px 16px; border-radius: 8px; text-decoration: none; font-size: 14px; transition: all 0.2s;">Back to Home</a>
         <div class="toggle">
           <span style="font-size:14px;color:var(--subtle)">Dark Mode</span>
@@ -163,6 +193,18 @@
             <input id="theme-toggle" type="checkbox" aria-label="Toggle dark mode">
             <span class="slider"></span>
           </label>
+        </div>
+      </div>
+    </div>
+    
+    <!-- Username Entry Modal -->
+    <div id="username-modal">
+      <div class="username-container">
+        <h2>Welcome!</h2>
+        <p>Please enter a username to participate in the leaderboard. This will only be asked once.</p>
+        <div class="username-input-group">
+          <input id="username-modal-input" type="text" placeholder="Enter username (1-20 characters)" maxlength="20" autofocus>
+          <button id="username-submit-btn">Continue</button>
         </div>
       </div>
     </div>
@@ -197,6 +239,19 @@
         <button disabled>Not available</button>
       </div>
     </section>
+
+    <!-- Leaderboard Modal -->
+    <div id="leaderboard-modal">
+      <div class="leaderboard-container">
+        <div class="leaderboard-header">
+          <h2>Leaderboard</h2>
+          <button class="leaderboard-close" id="close-leaderboard">Close</button>
+        </div>
+        <div id="leaderboard-list" class="leaderboard-list">
+          <div style="text-align: center; color: var(--subtle); padding: 20px;">Loading leaderboard...</div>
+        </div>
+      </div>
+    </div>
 
     <div class="page" id="blackjack-header" style="display:none">
       <h1 class="title">Blackjack</h1>
@@ -407,10 +462,211 @@
         const bjNewBtn = document.getElementById('bj-new');
         const bjHomeBtn = document.getElementById('bj-home');
 
+        // Cookie helper functions
+        function setCookie(name, value, days) {
+          const expires = new Date();
+          expires.setTime(expires.getTime() + (days * 24 * 60 * 60 * 1000));
+          document.cookie = `${name}=${value};expires=${expires.toUTCString()};path=/`;
+        }
+        
+        function getCookie(name) {
+          const nameEQ = name + "=";
+          const ca = document.cookie.split(';');
+          for (let i = 0; i < ca.length; i++) {
+            let c = ca[i];
+            while (c.charAt(0) === ' ') c = c.substring(1, c.length);
+            if (c.indexOf(nameEQ) === 0) return c.substring(nameEQ.length, c.length);
+          }
+          return null;
+        }
+        
         // Shared bankroll across all games
         let bankroll = parseFloat(localStorage.getItem('bankroll') || '100');
+        let username = getCookie('gambling_username') || '';
+        let lastSavedBankroll = bankroll;
+        
         function persistBankroll() {
           localStorage.setItem('bankroll', String(bankroll));
+        }
+        
+        // Initialize username modal
+        const usernameModal = document.getElementById('username-modal');
+        const usernameModalInput = document.getElementById('username-modal-input');
+        const usernameSubmitBtn = document.getElementById('username-submit-btn');
+        const showLeaderboardBtn = document.getElementById('show-leaderboard-btn');
+        const leaderboardModal = document.getElementById('leaderboard-modal');
+        const closeLeaderboardBtn = document.getElementById('close-leaderboard');
+        const leaderboardList = document.getElementById('leaderboard-list');
+        
+        // Check if username exists, show modal if not
+        function checkUsername() {
+          if (!username || username.length === 0) {
+            // Show modal
+            if (usernameModal) {
+              usernameModal.classList.add('active');
+              if (usernameModalInput) {
+                usernameModalInput.focus();
+              }
+            }
+          } else {
+            // Username exists, hide modal and save to leaderboard
+            if (usernameModal) {
+              usernameModal.classList.remove('active');
+            }
+            // Save current bankroll to leaderboard on load
+            setTimeout(() => {
+              saveToLeaderboard();
+            }, 1000);
+          }
+        }
+        
+        // Save username from modal
+        function saveUsername() {
+          const newUsername = (usernameModalInput?.value || '').trim();
+          if (newUsername.length < 1) {
+            alert('Please enter a username (1-20 characters)');
+            return;
+          }
+          if (newUsername.length > 20) {
+            alert('Username must be 20 characters or less');
+            return;
+          }
+          username = newUsername;
+          // Save to cookie (expires in 365 days)
+          setCookie('gambling_username', username, 365);
+          // Hide modal
+          if (usernameModal) {
+            usernameModal.classList.remove('active');
+          }
+          // Save current bankroll to leaderboard
+          saveToLeaderboard();
+        }
+        
+        if (usernameSubmitBtn) {
+          usernameSubmitBtn.addEventListener('click', saveUsername);
+        }
+        if (usernameModalInput) {
+          usernameModalInput.addEventListener('keypress', (e) => {
+            if (e.key === 'Enter') saveUsername();
+          });
+        }
+        
+        // Check username on page load
+        checkUsername();
+        
+        // Leaderboard functions
+        function showLeaderboard() {
+          leaderboardModal.classList.add('active');
+          loadLeaderboard();
+        }
+        
+        function hideLeaderboard() {
+          leaderboardModal.classList.remove('active');
+        }
+        
+        if (showLeaderboardBtn) {
+          showLeaderboardBtn.addEventListener('click', showLeaderboard);
+        }
+        if (closeLeaderboardBtn) {
+          closeLeaderboardBtn.addEventListener('click', hideLeaderboard);
+        }
+        if (leaderboardModal) {
+          leaderboardModal.addEventListener('click', (e) => {
+            if (e.target === leaderboardModal) hideLeaderboard();
+          });
+        }
+        
+        // Save to Firestore Leaderboard collection
+        async function saveToLeaderboard() {
+          if (!username || username.length === 0) return;
+          
+          try {
+            const db = firebase.firestore();
+            // Check if user already exists in leaderboard
+            const existingQuery = await db.collection('Leaderboard')
+              .where('username', '==', username)
+              .limit(1)
+              .get();
+            
+            if (!existingQuery.empty) {
+              // Update existing entry
+              const doc = existingQuery.docs[0];
+              await doc.ref.update({
+                bankroll: bankroll,
+                updatedAt: firebase.firestore.FieldValue.serverTimestamp()
+              });
+            } else {
+              // Create new entry
+              await db.collection('Leaderboard').add({
+                username: username,
+                bankroll: bankroll,
+                createdAt: firebase.firestore.FieldValue.serverTimestamp(),
+                updatedAt: firebase.firestore.FieldValue.serverTimestamp()
+              });
+            }
+            lastSavedBankroll = bankroll;
+          } catch (error) {
+            console.error('Error saving to leaderboard:', error);
+          }
+        }
+        
+        // Load leaderboard from Firestore
+        async function loadLeaderboard() {
+          leaderboardList.innerHTML = '<div style="text-align: center; color: var(--subtle); padding: 20px;">Loading leaderboard...</div>';
+          
+          try {
+            const db = firebase.firestore();
+            const snapshot = await db.collection('Leaderboard')
+              .orderBy('bankroll', 'desc')
+              .limit(50)
+              .get();
+            
+            if (snapshot.empty) {
+              leaderboardList.innerHTML = '<div style="text-align: center; color: var(--subtle); padding: 20px;">No entries yet. Be the first!</div>';
+              return;
+            }
+            
+            leaderboardList.innerHTML = '';
+            let rank = 1;
+            snapshot.forEach((doc) => {
+              const data = doc.data();
+              const item = document.createElement('div');
+              item.className = 'leaderboard-item';
+              if (data.username === username) {
+                item.classList.add('you');
+              }
+              
+              const rankEl = document.createElement('div');
+              rankEl.className = 'leaderboard-rank';
+              rankEl.textContent = `#${rank}`;
+              
+              const nameEl = document.createElement('div');
+              nameEl.className = 'leaderboard-name';
+              nameEl.textContent = data.username || 'Unknown';
+              
+              const amountEl = document.createElement('div');
+              amountEl.className = 'leaderboard-amount';
+              amountEl.textContent = formatMoney(data.bankroll || 0);
+              
+              item.appendChild(rankEl);
+              item.appendChild(nameEl);
+              item.appendChild(amountEl);
+              leaderboardList.appendChild(item);
+              rank++;
+            });
+          } catch (error) {
+            console.error('Error loading leaderboard:', error);
+            leaderboardList.innerHTML = '<div style="text-align: center; color: var(--lose); padding: 20px;">Error loading leaderboard. Please try again.</div>';
+          }
+        }
+        
+        // Auto-save to leaderboard when bankroll changes significantly
+        function checkAndUpdateLeaderboard() {
+          if (!username || username.length === 0) return;
+          // Update if bankroll changed by at least $1 or if it's been a while
+          if (Math.abs(bankroll - lastSavedBankroll) >= 1) {
+            saveToLeaderboard();
+          }
         }
         function updateSharedBankrollUI() {
           if (profitEl) {
@@ -546,10 +802,33 @@
           // Sync normalized final rotation with the snapped absolute rotation to avoid any drift
           lastFinalRotation = ((activeFinalRotation % 360) + 360) % 360;
 
-          // Determine winning index under top pointer using final rotation (normalized)
+          // Verify which segment is actually at the top after rotation
+          // The pointer is at 270° (top). After rotating by lastFinalRotation clockwise,
+          // a segment center that was at angle A is now at angle (A + lastFinalRotation) mod 360
+          // We want to find which segment center is closest to 270°
           const segmentAngleDeg = 360 / segments;
-          const theta = ((90 + lastFinalRotation) % 360 + 360) % 360; // angle from right at top pointer
-          const winningIndex = Math.floor(theta / segmentAngleDeg);
+          let closestIndex = 0;
+          let minDistance = 360;
+          for (let i = 0; i < segments; i++) {
+            const segmentCenter = i * segmentAngleDeg + segmentAngleDeg / 2;
+            const rotatedPosition = (segmentCenter + lastFinalRotation) % 360;
+            const distance = Math.abs(rotatedPosition - 270);
+            const wrappedDistance = Math.min(distance, 360 - distance);
+            if (wrappedDistance < minDistance) {
+              minDistance = wrappedDistance;
+              closestIndex = i;
+            }
+          }
+          
+          // Use the stored target index from the spin - this is the segment that was intentionally placed at the top
+          // This ensures the payout always matches what the wheel lands on
+          const winningIndex = lastTargetIndex;
+          
+          // Debug: Log if there's a mismatch (this shouldn't happen if rotation is correct)
+          if (closestIndex !== lastTargetIndex && minDistance > 5) {
+            console.log(`Warning: Visual segment at top (${closestIndex}) doesn't match target (${lastTargetIndex}). Distance: ${minDistance.toFixed(1)}°`);
+          }
+          
           const betNow = getBet();
           const payout = Math.round(multipliers[winningIndex] * betNow);
           if (payout > 0) {
@@ -560,6 +839,7 @@
           }
           persistBankroll();
           updateProfitDisplay();
+          checkAndUpdateLeaderboard();
           // Normalize transform to keep values small so next transition always triggers
           canvas.style.transform = `rotate(${lastFinalRotation}deg)`;
           // Ensure normalization is applied so next transition can be set later
@@ -582,26 +862,38 @@
           bankroll -= SPIN_COST;
           persistBankroll();
           updateProfitDisplay();
+          checkAndUpdateLeaderboard();
 
           // Choose a random target segment
           const targetIndex = Math.floor(Math.random() * segments);
           const segmentAngle = 360 / segments;
 
           // Compute final rotation so pointer lands on targetIndex at the top
-          // Pointer is at 0deg (top). Canvas labels are drawn starting from 0 rad to the right,
-          // but we only care about evenly spaced segments. Offset by half-segment so label centers align.
+          // Canvas segments are drawn starting from 0 radians = 0° (right, 3 o'clock), going clockwise
+          // Pointer is fixed at the top center, which is at 270° (or -90°) from the right
+          // Segment centers are at: segmentIndex * segmentAngle + segmentAngle/2 degrees from right
+          // Example: Segment 0 center = 0° + 15° = 15°, Segment 1 center = 30° + 15° = 45°, etc.
+          // When canvas rotates clockwise by R degrees, a point at angle A moves to angle (A + R) mod 360
+          // To bring segment center at angle A to the top (270°): A + R = 270°, so R = 270° - A
           const margin = 2; // degrees safety margin from edges
           const randomExtra = (Math.random() * (segmentAngle - 2 * margin)) - (segmentAngle / 2 - margin); // centered within segment
-          const targetCenter = targetIndex * segmentAngle + segmentAngle / 2; // from 0° at right
-          // Pointer at top (90° from right)
-          // CSS rotate() is clockwise-positive. To bring target to the top (90°),
-          // rotate by (targetCenter + randomExtra - 90°).
-          const alignToTop = (targetCenter + randomExtra) - 90;
+          const targetCenter = targetIndex * segmentAngle + segmentAngle / 2; // center of target segment from 0° (right)
+          // Pointer is at 270° (top). To bring targetCenter to 270°, we need to rotate
+          // When canvas rotates clockwise by R, a point at angle A moves to (A + R) mod 360
+          // To bring A to 270°: A + R = 270°, so R = 270° - A
+          // But we need to ensure positive rotation, so if negative, add 360°
+          let alignToTop = 270 - (targetCenter + randomExtra);
+          // Normalize to 0-360 range
+          alignToTop = ((alignToTop % 360) + 360) % 360;
           const extraSpins = 8; // strong spin
           const finalRotation = extraSpins * 360 + alignToTop;
           lastFinalRotation = ((finalRotation % 360) + 360) % 360; // normalize 0..359
           activeFinalRotation = finalRotation;
           lastTargetIndex = targetIndex;
+          
+          // Debug: Verify the calculation
+          // After rotation, targetCenter should be at: (targetCenter + alignToTop) mod 360
+          // = (targetCenter + 270 - targetCenter) mod 360 = 270 mod 360 = 270° ✓
 
           canvas.style.transition = `transform ${SPIN_DURATION_MS}ms cubic-bezier(0.23, 1, 0.32, 1)`;
           canvas.style.transform = `rotate(${finalRotation}deg)`;
@@ -776,6 +1068,7 @@
           bankroll -= bjBet;
           persistBankroll();
           updateSharedBankrollUI();
+          checkAndUpdateLeaderboard();
           dealerHoleHidden = true;
           bjPlayer = [];
           bjPlayer2 = null;
@@ -830,6 +1123,7 @@
           }
           persistBankroll();
           updateSharedBankrollUI();
+          checkAndUpdateLeaderboard();
           roundActive = false;
           setControls({ deal: false, hit: false, stand: false, split: false, next: true });
           // Focus next action
@@ -888,6 +1182,7 @@
           bankroll -= bjBet;
           persistBankroll();
           updateSharedBankrollUI();
+          checkAndUpdateLeaderboard();
           let hand = currentPlayerHand === 1 ? bjPlayer : currentPlayerHand === 2 ? bjPlayer2 : currentPlayerHand === 3 ? bjPlayer3 : bjPlayer4;
           const moved = hand.pop();
           if (!bjPlayer2 || !bjPlayer2.length) bjPlayer2 = [moved];
@@ -1073,7 +1368,7 @@
           const put = Math.min(amount, p.stack);
           p.stack -= put; pot += put; bets[i] = (bets[i] || 0) + put;
           if (p.stack === 0) p.allin = true;
-          if (i === 0) { bankroll = p.stack; persistBankroll(); }
+          if (i === 0) { bankroll = p.stack; persistBankroll(); checkAndUpdateLeaderboard(); }
         }
         function findFirstToActPreflop() { return (dealerIndex + 3) % NUM_PLAYERS; }
         function firstToActPostflop() { return (dealerIndex + 1) % NUM_PLAYERS; }
@@ -1153,36 +1448,206 @@
           const p = players[idx];
           const cards = [...community, ...p.hole];
           if (cards.length < 5) {
-            // preflop heuristic: high card sum + pair bonus
-            const v = p.hole.reduce((a,c)=>a+c.value,0) + (p.hole[0].rank===p.hole[1].rank?10:0);
-            return v / 40; // ~0..1
+            // Improved preflop evaluation
+            const h1 = p.hole[0], h2 = p.hole[1];
+            const v1 = h1.value, v2 = h2.value;
+            const isPair = h1.rank === h2.rank;
+            const isSuited = h1.suit === h2.suit;
+            const high = Math.max(v1, v2), low = Math.min(v1, v2);
+            
+            // Premium hands
+            if (isPair && high >= 10) return 0.85 + (high - 10) * 0.015; // AA=1.0, KK=0.985, etc.
+            if (high === 14 && low >= 10) return 0.75 + (low - 10) * 0.02; // AK, AQ, AJ, AT
+            if (high === 13 && low === 12) return 0.70; // KQ
+            if (isPair && high >= 7) return 0.60 + (high - 7) * 0.02; // 77-QQ
+            
+            // Medium hands (position dependent)
+            const position = (idx - dealerIndex + NUM_PLAYERS) % NUM_PLAYERS;
+            const isLatePosition = position >= 3;
+            
+            if (high === 14 && low >= 7) return isLatePosition ? 0.55 : 0.45; // A7-A9
+            if (high === 13 && low >= 10) return isLatePosition ? 0.60 : 0.50; // K10-KQ
+            if (isPair && high >= 4) return 0.50 + (high - 4) * 0.02; // 44-66
+            if (isSuited && high >= 10 && low >= 8) return isLatePosition ? 0.55 : 0.45; // Suited connectors
+            
+            // Weak hands
+            if (high === 14) return isLatePosition ? 0.40 : 0.30; // Ace rag
+            if (isPair) return 0.35; // Low pairs
+            if (high >= 10) return isLatePosition ? 0.35 : 0.25; // High card
+            
+            return isLatePosition ? 0.25 : 0.15; // Trash
           }
-          return evaluateBestOfSeven(cards)[0] / 10; // scale 0..1
+          // Post-flop: use actual hand strength
+          const rank = evaluateBestOfSeven(cards);
+          const handRank = rank[0]; // 1=high card, 9=straight flush
+          let strength = handRank / 10;
+          
+          // Adjust based on hand quality
+          if (handRank >= 8) strength = 0.95; // Quads or better
+          else if (handRank === 7) strength = 0.90; // Full house
+          else if (handRank === 6) strength = 0.80; // Flush
+          else if (handRank === 5) strength = 0.75; // Straight
+          else if (handRank === 4) strength = 0.65; // Three of a kind
+          else if (handRank === 3) strength = 0.55; // Two pair
+          else if (handRank === 2) strength = 0.40; // Pair
+          else {
+            // High card - adjust based on kicker
+            const highCard = Math.max(...cards.map(c => c.value));
+            strength = 0.15 + (highCard - 2) / 60; // 0.15-0.35
+          }
+          
+          // Consider board texture (simplified)
+          const boardCards = community.length;
+          if (boardCards >= 3) {
+            const boardValues = community.map(c => c.value);
+            const boardPairs = boardValues.filter((v, i) => boardValues.indexOf(v) !== i).length;
+            if (boardPairs > 0 && handRank <= 2) strength *= 0.8; // Board pairs, weak hand
+            if (new Set(community.map(c => c.suit)).size === 1 && handRank < 6) strength *= 0.7; // Flush possible
+          }
+          
+          return Math.min(0.98, Math.max(0.05, strength));
         }
+        
+        function getPosition(idx) {
+          const position = (idx - dealerIndex + NUM_PLAYERS) % NUM_PLAYERS;
+          return {
+            isEarly: position <= 1,
+            isLate: position >= 3,
+            position: position
+          };
+        }
+        
+        function calculatePotOdds(toCall, potSize) {
+          if (toCall === 0) return 1;
+          return potSize / (potSize + toCall);
+        }
+        
         function aiAct(idx) {
           const p = players[idx];
           if (p.folded || p.allin) { endTurnAndMaybeAdvance(); return; }
+          
           const toCall = Math.max(0, currentBet - (bets[idx] || 0));
-          const str = aiStrength(idx) + (Math.random()*0.2 - 0.1);
+          const potOdds = calculatePotOdds(toCall, pot);
+          const pos = getPosition(idx);
+          let str = aiStrength(idx);
+          
+          // Add small random variance (reduced from 0.2 to 0.1 for more consistent play)
+          str += (Math.random() * 0.1 - 0.05);
+          str = Math.max(0, Math.min(1, str));
+          
+          // Bluff probability (position and street dependent)
+          const bluffChance = pos.isLate && street !== 'preflop' && Math.random() < 0.15 ? 0.5 : 0;
+          const effectiveStrength = Math.max(str, bluffChance);
+          
           if (toCall === 0) {
-            // bet or check
-            if (str > 0.6 && p.stack > BIG_BLIND*2) {
-              const raiseTo = Math.min((bets[idx]||0) + BIG_BLIND * (2 + Math.floor(str*4)), (bets[idx]||0) + p.stack);
-              betAmount(idx, raiseTo - (bets[idx]||0)); currentBet = Math.max(currentBet, bets[idx]); log(`${p.name} bets to ${formatMoney(currentBet)}`); actedThisRound.clear(); actedThisRound.add(idx);
+            // First to act: bet or check
+            if (effectiveStrength > 0.55 && p.stack > BIG_BLIND * 2) {
+              // Bet sizing based on strength
+              let betMultiplier = 2;
+              if (effectiveStrength > 0.80) betMultiplier = 3.5; // Strong hands, bigger bets
+              else if (effectiveStrength > 0.65) betMultiplier = 2.5;
+              
+              const raiseTo = Math.min(
+                (bets[idx] || 0) + BIG_BLIND * betMultiplier,
+                (bets[idx] || 0) + p.stack
+              );
+              betAmount(idx, raiseTo - (bets[idx] || 0));
+              currentBet = Math.max(currentBet, bets[idx]);
+              log(`${p.name} bets to ${formatMoney(currentBet)}`);
+              actedThisRound.clear();
+              actedThisRound.add(idx);
+            } else if (effectiveStrength > 0.45 && pos.isLate && Math.random() < 0.3) {
+              // Late position semi-bluff or value bet with medium hands
+              const raiseTo = Math.min(
+                (bets[idx] || 0) + BIG_BLIND * 2,
+                (bets[idx] || 0) + p.stack
+              );
+              betAmount(idx, raiseTo - (bets[idx] || 0));
+              currentBet = Math.max(currentBet, bets[idx]);
+              log(`${p.name} bets to ${formatMoney(currentBet)}`);
+              actedThisRound.clear();
+              actedThisRound.add(idx);
             } else {
-              log(`${p.name} checks`); actedThisRound.add(idx);
+              log(`${p.name} checks`);
+              actedThisRound.add(idx);
             }
           } else {
-            if (str < 0.35 && toCall > BIG_BLIND && Math.random() < 0.8) { p.folded = true; log(`${p.name} folds`); }
-            else if (str > 0.7 && p.stack > toCall + BIG_BLIND*2 && Math.random() < 0.5) {
-              const raiseTo = Math.min(currentBet + BIG_BLIND * (2 + Math.floor(str*5)), (bets[idx]||0) + p.stack);
-              const put = raiseTo - (bets[idx]||0);
-              betAmount(idx, put); currentBet = Math.max(currentBet, bets[idx]); log(`${p.name} raises to ${formatMoney(currentBet)}`); actedThisRound.clear(); actedThisRound.add(idx);
+            // Facing a bet
+            const potOddsNeeded = 1 - str; // Inverse of hand strength
+            const canCallProfitably = potOdds >= potOddsNeeded * 0.7; // More aggressive calling
+            
+            // Fold decision: tighter with weak hands, especially in early position
+            if (str < 0.25) {
+              const foldThreshold = pos.isEarly ? 0.85 : 0.70;
+              if (Math.random() < foldThreshold || toCall > p.stack * 0.3) {
+                p.folded = true;
+                log(`${p.name} folds`);
+                renderSeats();
+                renderPotAndInfo();
+                endTurnAndMaybeAdvance();
+                return;
+              }
+            } else if (str < 0.40 && toCall > BIG_BLIND * 2) {
+              const foldThreshold = pos.isEarly ? 0.75 : 0.60;
+              if (Math.random() < foldThreshold && !canCallProfitably) {
+                p.folded = true;
+                log(`${p.name} folds`);
+                renderSeats();
+                renderPotAndInfo();
+                endTurnAndMaybeAdvance();
+                return;
+              }
+            }
+            
+            // Raise decision: more aggressive with strong hands
+            if (str > 0.65 && p.stack > toCall + BIG_BLIND * 2) {
+              const raiseChance = str > 0.80 ? 0.75 : str > 0.70 ? 0.60 : 0.40;
+              if (Math.random() < raiseChance) {
+                let raiseMultiplier = 2.5;
+                if (str > 0.85) raiseMultiplier = 4.0; // Very strong hands
+                else if (str > 0.75) raiseMultiplier = 3.0;
+                
+                const raiseTo = Math.min(
+                  currentBet + BIG_BLIND * raiseMultiplier,
+                  (bets[idx] || 0) + p.stack
+                );
+                const put = raiseTo - (bets[idx] || 0);
+                betAmount(idx, put);
+                currentBet = Math.max(currentBet, bets[idx]);
+                log(`${p.name} raises to ${formatMoney(currentBet)}`);
+                actedThisRound.clear();
+                actedThisRound.add(idx);
+              } else {
+                betAmount(idx, toCall);
+                log(`${p.name} calls ${formatMoney(toCall)}`);
+                actedThisRound.add(idx);
+              }
+            } else if (str > 0.50 && pos.isLate && p.stack > toCall + BIG_BLIND * 3 && Math.random() < 0.25) {
+              // Semi-bluff raise in late position
+              const raiseTo = Math.min(
+                currentBet + BIG_BLIND * 2.5,
+                (bets[idx] || 0) + p.stack
+              );
+              const put = raiseTo - (bets[idx] || 0);
+              betAmount(idx, put);
+              currentBet = Math.max(currentBet, bets[idx]);
+              log(`${p.name} raises to ${formatMoney(currentBet)}`);
+              actedThisRound.clear();
+              actedThisRound.add(idx);
+            } else if (canCallProfitably || str > 0.35) {
+              // Call with decent pot odds or reasonable hand
+              betAmount(idx, toCall);
+              log(`${p.name} calls ${formatMoney(toCall)}`);
+              actedThisRound.add(idx);
             } else {
-              betAmount(idx, toCall); log(`${p.name} calls ${formatMoney(toCall)}`); actedThisRound.add(idx);
+              // Fold if pot odds don't justify calling
+              p.folded = true;
+              log(`${p.name} folds`);
             }
           }
-          renderSeats(); renderPotAndInfo();
+          
+          renderSeats();
+          renderPotAndInfo();
           endTurnAndMaybeAdvance();
         }
 
@@ -1231,6 +1696,7 @@
           const share = pot / winners.length;
           winners.forEach(i=> { players[i].stack += share; if (i===0) bankroll = players[0].stack; });
           persistBankroll();
+          checkAndUpdateLeaderboard();
           log(`Showdown: ${winners.map(i=>players[i].name).join(', ')} win ${formatMoney(share)} each`);
           pokerStatusEl.textContent = 'Hand complete. Start a new hand when ready.';
           renderAll(true);
