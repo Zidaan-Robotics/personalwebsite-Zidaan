@@ -522,6 +522,11 @@
           <input type="range" id="voltage-charge-magnitude" min="1" max="10" value="5" step="0.5">
           <span id="voltage-magnitude-value">5</span>
         </div>
+        <div class="control-group">
+          <label>
+            <input type="checkbox" id="voltage-delete-mode"> Delete Mode (click charge to delete)
+          </label>
+        </div>
         <button id="clear-voltage">Clear All</button>
       </div>
       <div class="canvas-container">
@@ -1309,23 +1314,53 @@
         // Helper function to draw an arrow with optional thickness based on field strength
         function drawArrow(x1, y1, x2, y2, thickness = 2) {
           const oldLineWidth = ctx.lineWidth;
+          const oldLineCap = ctx.lineCap;
+          const oldLineJoin = ctx.lineJoin;
+          const oldStrokeStyle = ctx.strokeStyle;
+          const oldFillStyle = ctx.fillStyle;
+          
+          // Set line properties for thicker, smoother arrows
           ctx.lineWidth = thickness;
+          ctx.lineCap = 'round';
+          ctx.lineJoin = 'round';
+          
+          // Calculate arrowhead size proportional to thickness for better visual balance
+          const angle = Math.atan2(y2 - y1, x2 - x1);
+          // Scale arrowhead length and width with thickness
+          const arrowLength = Math.max(8, thickness * 1.5);
+          const arrowAngle = Math.PI / 6 + (thickness > 4 ? 0.1 : 0); // Slightly wider for thicker arrows
+          
+          // Draw the arrow shaft, stopping slightly before the end to connect smoothly with arrowhead
+          const shaftEndOffset = thickness * 0.3; // Shorten shaft slightly for better connection
+          const shaftEndX = x2 - shaftEndOffset * Math.cos(angle);
+          const shaftEndY = y2 - shaftEndOffset * Math.sin(angle);
           
           ctx.beginPath();
           ctx.moveTo(x1, y1);
-          ctx.lineTo(x2, y2);
+          ctx.lineTo(shaftEndX, shaftEndY);
           ctx.stroke();
           
-          const angle = Math.atan2(y2 - y1, x2 - x1);
-          const arrowSize = Math.max(6, thickness * 0.6); // Scale arrowhead size with thickness
+          // Draw arrowhead as a filled triangle that matches the line thickness
+          // The arrowhead should look like a natural extension of the thick line
           ctx.beginPath();
           ctx.moveTo(x2, y2);
-          ctx.lineTo(x2 - arrowSize * Math.cos(angle - Math.PI / 6), y2 - arrowSize * Math.sin(angle - Math.PI / 6));
-          ctx.lineTo(x2 - arrowSize * Math.cos(angle + Math.PI / 6), y2 - arrowSize * Math.sin(angle + Math.PI / 6));
+          ctx.lineTo(
+            x2 - arrowLength * Math.cos(angle - arrowAngle),
+            y2 - arrowLength * Math.sin(angle - arrowAngle)
+          );
+          ctx.lineTo(
+            x2 - arrowLength * Math.cos(angle + arrowAngle),
+            y2 - arrowLength * Math.sin(angle + arrowAngle)
+          );
           ctx.closePath();
           ctx.fill();
           
+          // Restore original properties
           ctx.lineWidth = oldLineWidth;
+          ctx.lineCap = oldLineCap;
+          ctx.lineJoin = oldLineJoin;
+          ctx.strokeStyle = oldStrokeStyle;
+          ctx.fillStyle = oldFillStyle;
         }
         
         // Helper function to calculate arrow thickness based on field strength
@@ -2258,16 +2293,36 @@
           const rect = canvas.getBoundingClientRect();
           const x = e.clientX - rect.left;
           const y = e.clientY - rect.top;
-          const type = document.getElementById('voltage-charge-type').value;
-          const magnitude = parseFloat(document.getElementById('voltage-charge-magnitude').value);
+          const deleteMode = document.getElementById('voltage-delete-mode').checked;
           
-          voltageCharges.push({
-            x: x,
-            y: y,
-            q: type === 'positive' ? magnitude : -magnitude
-          });
-          
-          draw();
+          if (deleteMode) {
+            // Delete mode: check if click is on a charge
+            for (let i = voltageCharges.length - 1; i >= 0; i--) {
+              const charge = voltageCharges[i];
+              const radius = 10 + Math.abs(charge.q) * 2;
+              const dx = x - charge.x;
+              const dy = y - charge.y;
+              const distance = Math.sqrt(dx * dx + dy * dy);
+              
+              if (distance <= radius + 5) { // Small tolerance for easier clicking
+                voltageCharges.splice(i, 1);
+                draw();
+                return;
+              }
+            }
+          } else {
+            // Add mode: add a new charge
+            const type = document.getElementById('voltage-charge-type').value;
+            const magnitude = parseFloat(document.getElementById('voltage-charge-magnitude').value);
+            
+            voltageCharges.push({
+              x: x,
+              y: y,
+              q: type === 'positive' ? magnitude : -magnitude
+            });
+            
+            draw();
+          }
         });
         
         // Clear button
@@ -2458,8 +2513,9 @@
               <div style="margin-left: 1rem; margin-bottom: 0.5rem;">
                 <strong>Charge Distribution:</strong> ${chargeDescription}
               </div>
-              <div style="margin-left: 1rem; margin-bottom: 0.5rem;">
-                For a <strong>spherical</strong> Gaussian surface:<br>
+              <div style="margin-left: 1rem; margin-bottom: 0.8rem; padding: 0.5rem; background: ${isDark ? 'rgba(129, 140, 248, 0.1)' : 'rgba(26, 35, 126, 0.05)'}; border-left: 3px solid var(--accent); border-radius: 4px;">
+                <strong>Surface Area Formula:</strong> For a <strong>sphere</strong>: A = 4πr²<br>
+                <strong>Gauss' Law Applied:</strong> For a <strong>spherical</strong> Gaussian surface:<br>
                 E · (4πr²) = Q_enc/ε₀
               </div>
               <div style="margin-left: 1rem; margin-bottom: 0.5rem;">
@@ -2469,8 +2525,12 @@
               </div>
               <div style="margin-left: 1rem; margin-bottom: 0.5rem;">
                 <strong>Step 2:</strong> Calculate surface area A<br>
-                A = 4πr² = 4π × (${r.toFixed(3)} m)²<br>
-                A = ${area.toExponential(2)} m²
+                <strong>Surface Area Formula (Sphere):</strong> A = 4πr²<br>
+                <div style="margin-left: 0.5rem; margin-top: 0.3rem;">
+                  A = 4πr² = 4π × (${r.toFixed(3)} m)²<br>
+                  A = 4 × π × ${(r * r).toFixed(6)} m²<br>
+                  A = ${area.toExponential(2)} m²
+                </div>
               </div>
               <div style="margin-left: 1rem; margin-bottom: 0.5rem;">
                 <strong>Step 3:</strong> Calculate flux Φ = E · A<br>
@@ -2509,8 +2569,11 @@
               <div style="margin-left: 1rem; margin-bottom: 0.5rem;">
                 <strong>Charge Distribution:</strong> ${chargeDescription}
               </div>
-              <div style="margin-left: 1rem; margin-bottom: 0.5rem;">
-                For a <strong>cylindrical</strong> Gaussian surface:<br>
+              <div style="margin-left: 1rem; margin-bottom: 0.8rem; padding: 0.5rem; background: ${isDark ? 'rgba(129, 140, 248, 0.1)' : 'rgba(26, 35, 126, 0.05)'}; border-left: 3px solid var(--accent); border-radius: 4px;">
+                <strong>Surface Area Formulas:</strong> For a <strong>cylinder</strong>:<br>
+                &nbsp;&nbsp;• Side area: A_side = 2πrh<br>
+                &nbsp;&nbsp;• Top/Bottom area: A_top = A_bottom = πr²<br>
+                <strong>Gauss' Law Applied:</strong> For a <strong>cylindrical</strong> Gaussian surface:<br>
                 ${chargeType === 'plane' ? 'E · (2πr²) = Q_enc/ε₀ (flux through top/bottom only, side has E ⟂ dA)' : 'E · (2πrh) = Q_enc/ε₀ (flux through side only, top/bottom have E ⟂ dA)'}
               </div>
               <div style="margin-left: 1rem; margin-bottom: 0.5rem;">
@@ -2521,8 +2584,13 @@
               ${chargeType === 'plane' ? `
               <div style="margin-left: 1rem; margin-bottom: 0.5rem;">
                 <strong>Step 2:</strong> Calculate top/bottom surface area A<br>
-                A = 2 × πr² = 2 × π × (${r.toFixed(3)} m)²<br>
-                A = ${(2 * Math.PI * r * r).toExponential(2)} m²
+                <strong>Surface Area Formula (Cylinder Top/Bottom):</strong> A_top = A_bottom = πr²<br>
+                <div style="margin-left: 0.5rem; margin-top: 0.3rem;">
+                  A_total = 2 × πr² = 2 × π × (${r.toFixed(3)} m)²<br>
+                  A_total = 2 × π × ${(r * r).toFixed(6)} m²<br>
+                  A_total = ${(2 * Math.PI * r * r).toExponential(2)} m²<br>
+                  <small>(Sum of top and bottom circular faces)</small>
+                </div>
               </div>
               <div style="margin-left: 1rem; margin-bottom: 0.5rem;">
                 <strong>Step 3:</strong> Calculate flux Φ = E · A<br>
@@ -2533,8 +2601,13 @@
               ` : `
               <div style="margin-left: 1rem; margin-bottom: 0.5rem;">
                 <strong>Step 2:</strong> Calculate side surface area A_side<br>
-                A_side = 2πrh = 2π × (${r.toFixed(3)} m) × (${h.toFixed(3)} m)<br>
-                A_side = ${sideArea.toExponential(2)} m²
+                <strong>Surface Area Formula (Cylinder Side):</strong> A_side = 2πrh<br>
+                <div style="margin-left: 0.5rem; margin-top: 0.3rem;">
+                  A_side = 2πrh = 2π × (${r.toFixed(3)} m) × (${h.toFixed(3)} m)<br>
+                  A_side = 2 × π × ${r.toFixed(3)} × ${h.toFixed(3)} m²<br>
+                  A_side = ${sideArea.toExponential(2)} m²<br>
+                  <small>(Lateral surface area: circumference × height)</small>
+                </div>
               </div>
               <div style="margin-left: 1rem; margin-bottom: 0.5rem;">
                 <strong>Step 3:</strong> Calculate flux Φ = E · A_side<br>
@@ -2562,8 +2635,10 @@
               <div style="margin-left: 1rem; margin-bottom: 0.5rem;">
                 <strong>Charge Distribution:</strong> ${chargeDescription}
               </div>
-              <div style="margin-left: 1rem; margin-bottom: 0.5rem;">
-                For a <strong>ring</strong> (torus) Gaussian surface:<br>
+              <div style="margin-left: 1rem; margin-bottom: 0.8rem; padding: 0.5rem; background: ${isDark ? 'rgba(129, 140, 248, 0.1)' : 'rgba(26, 35, 126, 0.05)'}; border-left: 3px solid var(--accent); border-radius: 4px;">
+                <strong>Surface Area Formula:</strong> For a <strong>torus</strong> (ring): A = 4π²Rr<br>
+                &nbsp;&nbsp;where R = major radius, r = minor radius (here R = r)<br>
+                <strong>Gauss' Law Applied:</strong> For a <strong>ring</strong> (torus) Gaussian surface:<br>
                 E · A_ring = Q_enc/ε₀
               </div>
               <div style="margin-left: 1rem; margin-bottom: 0.5rem;">
@@ -2573,9 +2648,14 @@
               </div>
               <div style="margin-left: 1rem; margin-bottom: 0.5rem;">
                 <strong>Step 2:</strong> Calculate ring (torus) surface area A<br>
-                A = 4π²Rr = 4π² × (${r.toFixed(3)} m) × (${r.toFixed(3)} m)<br>
-                A = ${ringArea.toExponential(2)} m²<br>
-                <small>(For torus: R = major radius, r = minor radius, here R = r)</small>
+                <strong>Surface Area Formula (Torus):</strong> A = 4π²Rr<br>
+                <div style="margin-left: 0.5rem; margin-top: 0.3rem;">
+                  Where R = major radius, r = minor radius (here R = r = ${r.toFixed(3)} m)<br>
+                  A = 4π²Rr = 4π² × (${r.toFixed(3)} m) × (${r.toFixed(3)} m)<br>
+                  A = 4 × π² × ${(r * r).toFixed(6)} m²<br>
+                  A = ${ringArea.toExponential(2)} m²<br>
+                  <small>(Surface area of a torus/donut shape)</small>
+                </div>
               </div>
               <div style="margin-left: 1rem; margin-bottom: 0.5rem;">
                 <strong>Step 3:</strong> Calculate flux Φ = E · A<br>
