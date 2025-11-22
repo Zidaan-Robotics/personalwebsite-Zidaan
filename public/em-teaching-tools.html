@@ -227,6 +227,49 @@
     }
     .control-group input[type="range"] {
       width: 150px;
+      -webkit-appearance: none;
+      appearance: none;
+      background: transparent;
+      cursor: pointer;
+      height: 8px;
+    }
+    /* Track styling */
+    .control-group input[type="range"]::-webkit-slider-runnable-track {
+      background: var(--panel-border);
+      height: 8px;
+      border-radius: 4px;
+    }
+    .control-group input[type="range"]::-moz-range-track {
+      background: var(--panel-border);
+      height: 8px;
+      border-radius: 4px;
+    }
+    /* Fill styling for Mozilla */
+    .control-group input[type="range"]::-moz-range-progress {
+      background: var(--accent);
+      height: 8px;
+      border-radius: 4px 0 0 4px;
+    }
+    /* Thumb styling */
+    .control-group input[type="range"]::-webkit-slider-thumb {
+      -webkit-appearance: none;
+      appearance: none;
+      background: var(--accent);
+      height: 18px;
+      width: 18px;
+      border-radius: 50%;
+      cursor: pointer;
+      margin-top: -5px;
+      position: relative;
+      z-index: 1;
+    }
+    .control-group input[type="range"]::-moz-range-thumb {
+      background: var(--accent);
+      height: 18px;
+      width: 18px;
+      border-radius: 50%;
+      cursor: pointer;
+      border: none;
     }
     button {
       padding: 0.75rem 1.5rem;
@@ -257,6 +300,38 @@
     }
     body.dark .info-box {
       background: rgba(199, 210, 254, 0.1);
+    }
+    .overview-box {
+      background: rgba(26, 35, 126, 0.08);
+      border: 2px solid var(--accent);
+      border-radius: 12px;
+      padding: 1.5rem;
+      margin: 1.5rem 0;
+      color: var(--subtle);
+    }
+    body.dark .overview-box {
+      background: rgba(199, 210, 254, 0.08);
+    }
+    .overview-box h3 {
+      color: var(--accent);
+      font-size: 1.2rem;
+      margin-bottom: 1rem;
+      margin-top: 0;
+    }
+    .overview-box p {
+      margin-bottom: 1rem;
+      line-height: 1.7;
+    }
+    .overview-box p:last-child {
+      margin-bottom: 0;
+    }
+    .overview-box ul {
+      margin-left: 1.5rem;
+      margin-bottom: 1rem;
+      line-height: 1.7;
+    }
+    .overview-box li {
+      margin-bottom: 0.5rem;
     }
   </style>
 </head>
@@ -294,6 +369,18 @@
     <!-- Electric Field Tool Section -->
     <div class="tool-section" id="electric-field-section">
       <h2>Electric Field Visualization</h2>
+      <div class="overview-box">
+        <h3>What is an Electric Field?</h3>
+        <p>An electric field is an invisible force field that surrounds any electric charge. Think of it like a gravitational field around a planet, but for electric charges instead of mass. The electric field describes how a charge would influence other charges placed nearby.</p>
+        <p><strong>Key Concepts:</strong></p>
+        <ul>
+          <li><strong>Field Lines:</strong> Visual representations showing the direction and strength of the electric field. Lines point away from positive charges and toward negative charges.</li>
+          <li><strong>Field Strength:</strong> The density of field lines indicates how strong the field is. Closer lines mean a stronger field.</li>
+          <li><strong>Superposition:</strong> When multiple charges are present, their electric fields add together at each point in space.</li>
+          <li><strong>Direction:</strong> The field direction shows which way a positive test charge would be pushed if placed at that location.</li>
+        </ul>
+        <p>Electric fields are fundamental to understanding how charges interact with each other and are the basis for many electrical phenomena, from static electricity to the operation of electronic devices.</p>
+      </div>
       <p>Click on the canvas to place charges. Positive charges repel, negative charges attract. The field lines show the direction and strength of the electric field.</p>
       <div class="info-box">
         <strong>Formula:</strong> E = kq/r² where k = 9×10⁹ N⋅m²/C², q is charge, r is distance
@@ -312,6 +399,11 @@
           <span id="magnitude-value">5</span>
         </div>
         <button id="clear-field">Clear All</button>
+        <div class="control-group">
+          <label>
+            <input type="checkbox" id="delete-mode"> Delete Mode (click charge to delete)
+          </label>
+        </div>
       </div>
       <div class="canvas-container">
         <canvas id="field-canvas" width="800" height="600"></canvas>
@@ -321,6 +413,18 @@
     <!-- Flux Tool Section -->
     <div class="tool-section" id="flux-section">
       <h2>Electric Flux</h2>
+      <div class="overview-box">
+        <h3>What is Electric Flux?</h3>
+        <p>Electric flux is a measure of how much electric field "flows" through a given surface. Imagine the electric field as a flow of invisible lines, and flux tells you how many of these lines pass through a surface.</p>
+        <p><strong>Key Concepts:</strong></p>
+        <ul>
+          <li><strong>Surface Orientation:</strong> The angle between the electric field and the surface matters. Maximum flux occurs when the field is perpendicular to the surface; zero flux occurs when the field is parallel to the surface.</li>
+          <li><strong>Field Strength:</strong> Stronger electric fields produce more flux through the same surface.</li>
+          <li><strong>Surface Area:</strong> Larger surfaces can "catch" more field lines, resulting in greater flux.</li>
+          <li><strong>Mathematical Relationship:</strong> Flux depends on the component of the electric field perpendicular to the surface, multiplied by the surface area.</li>
+        </ul>
+        <p>Electric flux is a crucial concept that leads to Gauss' Law, one of the four fundamental equations of electromagnetism. It helps us understand how electric fields interact with surfaces and is essential for calculating electric fields in symmetric situations.</p>
+      </div>
       <p>Electric flux is the measure of electric field passing through a surface. Rotate the surface and see how the flux changes with angle.</p>
       <div class="info-box">
         <strong>Formula:</strong> Φ = E⋅A⋅cos(θ) where E is electric field, A is area, θ is angle between field and normal
@@ -389,6 +493,18 @@
     <!-- Voltage Tool Section -->
     <div class="tool-section" id="voltage-section">
       <h2>Voltage & Equipotential Lines</h2>
+      <div class="overview-box">
+        <h3>What is Voltage and What are Equipotential Lines?</h3>
+        <p>Voltage (also called electric potential) is a measure of the electric potential energy per unit charge at a point in space. It tells you how much work would be needed to move a charge to that location from a reference point (usually infinity).</p>
+        <p><strong>Key Concepts:</strong></p>
+        <ul>
+          <li><strong>Equipotential Lines:</strong> These are imaginary lines connecting all points that have the same voltage. No work is required to move a charge along an equipotential line.</li>
+          <li><strong>Perpendicular Relationship:</strong> Equipotential lines are always perpendicular to electric field lines. This is because the electric field points in the direction of decreasing voltage (voltage gradient).</li>
+          <li><strong>Spacing:</strong> Closer equipotential lines indicate a stronger electric field, just like contour lines on a map indicate steeper terrain.</li>
+          <li><strong>Work and Energy:</strong> Moving a charge between different equipotential lines requires work. The voltage difference tells you how much energy is needed.</li>
+        </ul>
+        <p>Voltage is what drives electric current in circuits and is fundamental to understanding electrical energy. Equipotential surfaces help visualize how electric potential varies in space and are essential for understanding capacitors, batteries, and many other electrical devices.</p>
+      </div>
       <p>Equipotential lines connect points of equal voltage. They are always perpendicular to electric field lines.</p>
       <div class="info-box">
         <strong>Formula:</strong> V = kq/r where V is voltage, k = 9×10⁹ N⋅m²/C², q is charge, r is distance
@@ -416,6 +532,18 @@
     <!-- Gauss' Law Tool Section -->
     <div class="tool-section" id="gauss-section">
       <h2>Gauss' Law</h2>
+      <div class="overview-box">
+        <h3>What is Gauss' Law?</h3>
+        <p>Gauss' Law is one of the four fundamental equations of electromagnetism (Maxwell's equations). It provides a powerful relationship between electric fields and the charges that create them, stating that the total electric flux through any closed surface is proportional to the total charge enclosed within that surface.</p>
+        <p><strong>Key Concepts:</strong></p>
+        <ul>
+          <li><strong>Closed Surface:</strong> A surface that completely encloses a volume, like a sphere, cylinder, or box. The surface must be closed for Gauss' Law to apply.</li>
+          <li><strong>Enclosed Charge:</strong> Only charges inside the closed surface matter. Charges outside the surface don't affect the total flux through the surface.</li>
+          <li><strong>Symmetry:</strong> Gauss' Law is most useful when there's symmetry in the charge distribution, allowing us to easily calculate electric fields that would be difficult to find otherwise.</li>
+          <li><strong>Flux Independence:</strong> The total flux depends only on the enclosed charge, not on the size or shape of the closed surface (as long as it encloses the same charge).</li>
+        </ul>
+        <p>Gauss' Law is incredibly powerful because it allows us to calculate electric fields for symmetric charge distributions (like spheres, cylinders, and planes) much more easily than using Coulomb's law directly. It's a fundamental principle that connects the geometry of electric fields to the charges that create them.</p>
+      </div>
       <p>Gauss' law states that the electric flux through a closed surface is proportional to the charge enclosed.</p>
       <div class="info-box">
         <strong>Gauss' Law:</strong> ∮ E · dA = Q_enc/ε₀ where Q_enc is enclosed charge, ε₀ = 8.85×10⁻¹² C²/N⋅m²
@@ -494,12 +622,87 @@
         if (typeof gaussDrawFunction === 'function') {
           gaussDrawFunction();
         }
+        // Update all slider fills after theme change
+        updateAllSliderFills();
       });
+
+      // Function to update slider fill visualization
+      function updateSliderFill(slider) {
+        if (!slider) return;
+        const min = parseFloat(slider.min);
+        const max = parseFloat(slider.max);
+        const value = parseFloat(slider.value);
+        
+        // Calculate fill percentage (0 to 100%)
+        const percent = ((value - min) / (max - min)) * 100;
+        // Ensure it goes to 100% when at max
+        const fillPercent = Math.min(100, Math.max(0, percent));
+        
+        // Get computed accent color
+        const computedStyle = getComputedStyle(document.documentElement);
+        const accentColor = computedStyle.getPropertyValue('--accent').trim();
+        const trackColor = computedStyle.getPropertyValue('--panel-border').trim();
+        
+        // Update webkit slider track background
+        slider.style.setProperty('--fill-percent', fillPercent + '%');
+        
+        // For webkit browsers, update the background gradient
+        const trackStyle = `
+          linear-gradient(to right,
+            ${accentColor} 0%,
+            ${accentColor} ${fillPercent}%,
+            ${trackColor} ${fillPercent}%,
+            ${trackColor} 100%
+          )
+        `;
+        
+        // Apply to webkit slider track via style element
+        let styleId = 'slider-style-' + slider.id;
+        let existingStyle = document.getElementById(styleId);
+        if (!existingStyle) {
+          existingStyle = document.createElement('style');
+          existingStyle.id = styleId;
+          document.head.appendChild(existingStyle);
+        }
+        existingStyle.textContent = `
+          #${slider.id}::-webkit-slider-runnable-track {
+            background: ${trackStyle} !important;
+          }
+        `;
+      }
+      
+      // Function to update all slider fills
+      function updateAllSliderFills() {
+        const allSliders = document.querySelectorAll('input[type="range"]');
+        allSliders.forEach(slider => {
+          updateSliderFill(slider);
+        });
+      }
+      
+      // Use event delegation to update fills on all slider inputs
+      document.addEventListener('input', function(e) {
+        if (e.target && e.target.type === 'range') {
+          updateSliderFill(e.target);
+        }
+      });
+      
+      // Initialize all slider fills after a short delay to ensure DOM is ready
+      setTimeout(() => {
+        updateAllSliderFills();
+      }, 100);
 
       // Tool navigation - only show one section at a time
       window.currentTool = null;
       const toolCards = document.querySelectorAll('.tool-card');
       const toolSections = document.querySelectorAll('.tool-section');
+      
+      // Update fills when tool sections become visible
+      const observer = new MutationObserver(() => {
+        updateAllSliderFills();
+      });
+      toolSections.forEach(section => {
+        observer.observe(section, { attributes: true, attributeFilter: ['class'] });
+      });
 
       // Ensure all sections are hidden initially
       toolSections.forEach(section => {
@@ -806,16 +1009,36 @@
           const rect = canvas.getBoundingClientRect();
           const x = e.clientX - rect.left;
           const y = e.clientY - rect.top;
-          const type = document.getElementById('charge-type').value;
-          const magnitude = parseFloat(document.getElementById('charge-magnitude').value);
+          const deleteMode = document.getElementById('delete-mode').checked;
           
-          charges.push({
-            x: x,
-            y: y,
-            q: type === 'positive' ? magnitude : -magnitude
-          });
-          
-          draw();
+          if (deleteMode) {
+            // Delete mode: check if click is on a charge
+            for (let i = charges.length - 1; i >= 0; i--) {
+              const charge = charges[i];
+              const radius = 10 + Math.abs(charge.q) * 2;
+              const dx = x - charge.x;
+              const dy = y - charge.y;
+              const distance = Math.sqrt(dx * dx + dy * dy);
+              
+              if (distance <= radius + 5) { // Small tolerance for easier clicking
+                charges.splice(i, 1);
+                draw();
+                return;
+              }
+            }
+          } else {
+            // Add mode: add a new charge
+            const type = document.getElementById('charge-type').value;
+            const magnitude = parseFloat(document.getElementById('charge-magnitude').value);
+            
+            charges.push({
+              x: x,
+              y: y,
+              q: type === 'positive' ? magnitude : -magnitude
+            });
+            
+            draw();
+          }
         });
         
         // Clear button
@@ -1083,20 +1306,34 @@
           return { flux, area, areaM2 };
         }
         
-        // Helper function to draw an arrow
-        function drawArrow(x1, y1, x2, y2) {
+        // Helper function to draw an arrow with optional thickness based on field strength
+        function drawArrow(x1, y1, x2, y2, thickness = 2) {
+          const oldLineWidth = ctx.lineWidth;
+          ctx.lineWidth = thickness;
+          
           ctx.beginPath();
           ctx.moveTo(x1, y1);
           ctx.lineTo(x2, y2);
           ctx.stroke();
           
           const angle = Math.atan2(y2 - y1, x2 - x1);
+          const arrowSize = Math.max(6, thickness * 0.6); // Scale arrowhead size with thickness
           ctx.beginPath();
           ctx.moveTo(x2, y2);
-          ctx.lineTo(x2 - 8 * Math.cos(angle - Math.PI / 6), y2 - 8 * Math.sin(angle - Math.PI / 6));
-          ctx.lineTo(x2 - 8 * Math.cos(angle + Math.PI / 6), y2 - 8 * Math.sin(angle + Math.PI / 6));
+          ctx.lineTo(x2 - arrowSize * Math.cos(angle - Math.PI / 6), y2 - arrowSize * Math.sin(angle - Math.PI / 6));
+          ctx.lineTo(x2 - arrowSize * Math.cos(angle + Math.PI / 6), y2 - arrowSize * Math.sin(angle + Math.PI / 6));
           ctx.closePath();
           ctx.fill();
+          
+          ctx.lineWidth = oldLineWidth;
+        }
+        
+        // Helper function to calculate arrow thickness based on field strength
+        function getArrowThickness(fieldMagnitude, minStrength = 1, maxStrength = 20) {
+          // Map field magnitude to thickness range (1.5px to 6px)
+          const normalized = (fieldMagnitude - minStrength) / (maxStrength - minStrength);
+          const clamped = Math.max(0, Math.min(1, normalized));
+          return 1.5 + clamped * 4.5; // Range from 1.5 to 6
         }
         
         // Draw field lines based on field type
@@ -1107,6 +1344,8 @@
           ctx.lineWidth = 2;
           
           if (fieldType === 'uniform-vertical') {
+            const fieldStrength = parseFloat(document.getElementById('flux-field-strength').value);
+            const arrowThickness = getArrowThickness(fieldStrength);
             for (let x = 50; x < canvas.width; x += 40) {
               if (viewMode === '3d') {
                 for (let y = 50; y < canvas.height; y += 80) {
@@ -1114,7 +1353,7 @@
                   const end3D = { x: x - canvas.width / 2, y: y - canvas.height / 2 - 30, z: 0 };
                   const start2D = project3D(start3D, cameraZ);
                   const end2D = project3D(end3D, cameraZ);
-                  drawArrow(start2D.x, start2D.y, end2D.x, end2D.y);
+                  drawArrow(start2D.x, start2D.y, end2D.x, end2D.y, arrowThickness);
                 }
               } else {
                 ctx.beginPath();
@@ -1122,12 +1361,14 @@
                 ctx.lineTo(x, canvas.height);
                 ctx.stroke();
                 for (let y = 30; y < canvas.height; y += 60) {
-                  drawArrow(x, y, x, y - 15);
+                  drawArrow(x, y, x, y - 15, arrowThickness);
                 }
               }
             }
           } else if (fieldType === 'uniform-diagonal') {
             const fieldAngle = parseFloat(document.getElementById('flux-field-angle').value) * Math.PI / 180;
+            const fieldStrength = parseFloat(document.getElementById('flux-field-strength').value);
+            const arrowThickness = getArrowThickness(fieldStrength);
             const spacing = 40;
             const perpAngle = fieldAngle + Math.PI / 2;
             const centerX = canvas.width / 2;
@@ -1225,7 +1466,7 @@
                     const arrowY = start2D.y + (end2D.y - start2D.y) * t;
                     const arrowEndX = arrowX + Math.cos(fieldAngle) * 20;
                     const arrowEndY = arrowY + Math.sin(fieldAngle) * 20;
-                    drawArrow(arrowX, arrowY, arrowEndX, arrowEndY);
+                    drawArrow(arrowX, arrowY, arrowEndX, arrowEndY, arrowThickness);
                   }
                 } else {
                   ctx.beginPath();
@@ -1241,7 +1482,7 @@
                     const arrowY = startY + (endY - startY) * t;
                     const arrowEndX = arrowX + Math.cos(fieldAngle) * 20;
                     const arrowEndY = arrowY + Math.sin(fieldAngle) * 20;
-                    drawArrow(arrowX, arrowY, arrowEndX, arrowEndY);
+                    drawArrow(arrowX, arrowY, arrowEndX, arrowEndY, arrowThickness);
                   }
                 }
               }
@@ -1258,6 +1499,13 @@
               const endX = centerX + Math.cos(angle) * maxR;
               const endY = centerY + Math.sin(angle) * maxR;
               
+              // Calculate field strength at arrow position (closer to center = stronger)
+              const arrowR = startR + (maxR - startR) * 0.7;
+              const arrowX = centerX + Math.cos(angle) * arrowR;
+              const arrowY = centerY + Math.sin(angle) * arrowR;
+              const field = getFieldAtPoint(arrowX, arrowY);
+              const arrowThickness = getArrowThickness(field.magnitude, 3, 50); // Radial fields vary more
+              
               if (viewMode === '3d') {
                 const start3D = { x: startX - centerX, y: startY - centerY, z: 0 };
                 const end3D = { x: endX - centerX, y: endY - centerY, z: 0 };
@@ -1268,22 +1516,20 @@
                 ctx.lineTo(end2D.x, end2D.y);
                 ctx.stroke();
                 
-                const arrowX = start2D.x + (end2D.x - start2D.x) * 0.7;
-                const arrowY = start2D.y + (end2D.y - start2D.y) * 0.7;
-                const arrowEndX = arrowX + Math.cos(angle) * 15;
-                const arrowEndY = arrowY + Math.sin(angle) * 15;
-                drawArrow(arrowX, arrowY, arrowEndX, arrowEndY);
+                const arrowX2D = start2D.x + (end2D.x - start2D.x) * 0.7;
+                const arrowY2D = start2D.y + (end2D.y - start2D.y) * 0.7;
+                const arrowEndX = arrowX2D + Math.cos(angle) * 15;
+                const arrowEndY = arrowY2D + Math.sin(angle) * 15;
+                drawArrow(arrowX2D, arrowY2D, arrowEndX, arrowEndY, arrowThickness);
               } else {
                 ctx.beginPath();
                 ctx.moveTo(startX, startY);
                 ctx.lineTo(endX, endY);
                 ctx.stroke();
                 
-                const arrowX = startX + (endX - startX) * 0.7;
-                const arrowY = startY + (endY - startY) * 0.7;
                 const arrowEndX = arrowX + Math.cos(angle) * 15;
                 const arrowEndY = arrowY + Math.sin(angle) * 15;
-                drawArrow(arrowX, arrowY, arrowEndX, arrowEndY);
+                drawArrow(arrowX, arrowY, arrowEndX, arrowEndY, arrowThickness);
               }
             }
           } else if (fieldType === 'nonuniform-varying') {
@@ -1298,7 +1544,7 @@
                 const clampedIntensity = Math.max(0, Math.min(1, intensity));
                 
                 ctx.globalAlpha = 0.3 + clampedIntensity * 0.5;
-                ctx.lineWidth = 1 + clampedIntensity * 3;
+                const arrowThickness = getArrowThickness(field.magnitude, minStrength, maxStrength);
                 const arrowLength = 10 + clampedIntensity * 20;
                 
                 if (viewMode === '3d') {
@@ -1306,9 +1552,9 @@
                   const end3D = { x: x - canvas.width / 2, y: y - canvas.height / 2 - arrowLength, z: 0 };
                   const start2D = project3D(start3D, cameraZ);
                   const end2D = project3D(end3D, cameraZ);
-                  drawArrow(start2D.x, start2D.y, end2D.x, end2D.y);
+                  drawArrow(start2D.x, start2D.y, end2D.x, end2D.y, arrowThickness);
                 } else {
-                  drawArrow(x, y, x, y - arrowLength);
+                  drawArrow(x, y, x, y - arrowLength, arrowThickness);
                 }
               }
             }
